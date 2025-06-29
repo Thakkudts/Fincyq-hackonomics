@@ -1,4 +1,3 @@
-```
 import React, { useState } from 'react';
 import { UserProfile, SavedAIAdvice } from '../types';
 import { useAuth } from '../hooks/useAuth';
@@ -201,7 +200,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
           
           {/* API Status Indicator */}
           <div className="flex items-center gap-2">
-            <div className={\`w-2 h-2 rounded-full ${openAIConfigured ? 'bg-green-400' : 'bg-yellow-400'}`} />
+            <div className={`w-2 h-2 rounded-full ${openAIConfigured ? 'bg-green-400' : 'bg-yellow-400'}`} />
             <span className="text-white/60 text-xs">
               {openAIConfigured ? 'OpenAI Connected' : 'Fallback Mode'}
             </span>
@@ -225,7 +224,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
         <div className="flex gap-1 bg-white/5 rounded-lg p-1">
           <button
             onClick={() => setActiveTab('ask')}
-            className={\`flex-1 px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 ${
+            className={`flex-1 px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 ${
               activeTab === 'ask'
                 ? 'bg-purple-500 text-white'
                 : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -236,7 +235,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
           </button>
           <button
             onClick={() => setActiveTab('saved')}
-            className={\`flex-1 px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 ${
+            className={`flex-1 px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 ${
               activeTab === 'saved'
                 ? 'bg-purple-500 text-white'
                 : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -461,7 +460,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                                 ))}
                               </select>
                             ) : (
-                              <span className={\`px-2 py-1 rounded text-xs font-medium text-white ${categoryColors[advice.category as keyof typeof categoryColors] || 'bg-slate-500'}`}>
+                              <span className={`px-2 py-1 rounded text-xs font-medium text-white ${categoryColors[advice.category as keyof typeof categoryColors] || 'bg-slate-500'}`}>
                                 {advice.category || 'General'}
                               </span>
                             )}
@@ -554,4 +553,3 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
     </div>
   );
 }
-```
