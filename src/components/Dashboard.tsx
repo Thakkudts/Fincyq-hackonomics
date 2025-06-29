@@ -18,8 +18,9 @@ import BadgeSummaryWidget from './BadgeSummaryWidget';
 import BadgeUnlocked from './BadgeUnlocked';
 import BadgeModal from './BadgeModal';
 import FinancialOptimizer from './FinancialOptimizer';
+import PlanningWizard from './PlanningWizard';
 import { calculateTimeline, scenarios, formatCurrency } from '../utils/financialCalculations';
-import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch, Trophy, X } from 'lucide-react';
+import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch, Trophy, X, Play } from 'lucide-react';
 
 interface DashboardProps {
   profile: UserProfile;
@@ -37,6 +38,7 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
   const [showBranchingPaths, setShowBranchingPaths] = useState(false);
   const [showBadgeGallery, setShowBadgeGallery] = useState(false);
   const [showFinancialOptimizer, setShowFinancialOptimizer] = useState(false);
+  const [showPlanningWizard, setShowPlanningWizard] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [timelineData, setTimelineData] = useState<any[]>([]);
 
@@ -101,6 +103,11 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
     // Here you could update the profile with the optimization suggestions
     console.log('Applying optimizations:', suggestions);
     // You might want to show a success message or update the profile state
+  };
+
+  const handlePlanningWizardStart = () => {
+    // This could navigate to a specific planning section or show a success message
+    console.log('Starting financial plan from wizard');
   };
 
   return (
@@ -184,6 +191,15 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
             </div>
             
             <div className="flex items-center gap-3 flex-wrap">
+              {/* Planning Wizard Button */}
+              <button
+                onClick={() => setShowPlanningWizard(true)}
+                className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-lg text-white font-medium transition-colors flex items-center gap-2 shadow-lg"
+              >
+                <Play size={16} />
+                Your Story
+              </button>
+
               {/* Achievements Button */}
               <button
                 onClick={() => setShowBadgeGallery(true)}
@@ -433,6 +449,15 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
           </div>
         </div>
       </div>
+
+      {/* Planning Wizard Modal */}
+      {showPlanningWizard && (
+        <PlanningWizard
+          profile={profile}
+          onClose={() => setShowPlanningWizard(false)}
+          onStartPlan={handlePlanningWizardStart}
+        />
+      )}
 
       {/* Financial Optimizer Modal */}
       {showFinancialOptimizer && (
