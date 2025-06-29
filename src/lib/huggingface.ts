@@ -87,10 +87,7 @@ export async function generateFinancialAdvice(
   }
 ): Promise<HuggingFaceResponse> {
   if (!isHuggingFaceConfigured) {
-    return {
-      success: false,
-      error: 'Hugging Face API key not configured. Please add VITE_HUGGINGFACE_API_KEY to your environment variables.'
-    };
+    return generateFallbackAdvice(userQuestion, userProfile);
   }
 
   try {
@@ -167,28 +164,8 @@ ${userContext} [/INST]`;
   } catch (error: any) {
     console.error('Hugging Face API Error:', error);
     
-    // Provide helpful error messages
-    if (error.message?.includes('401') || error.message?.includes('403')) {
-      return {
-        success: false,
-        error: 'Invalid Hugging Face API key. Please check your VITE_HUGGINGFACE_API_KEY environment variable.'
-      };
-    } else if (error.message?.includes('429')) {
-      return {
-        success: false,
-        error: 'Hugging Face API rate limit exceeded. Please try again in a moment.'
-      };
-    } else if (error.message?.includes('503')) {
-      return {
-        success: false,
-        error: 'Model is currently loading. Please try again in a few moments.'
-      };
-    } else {
-      return {
-        success: false,
-        error: error.message || 'Failed to generate AI advice. Please try again.'
-      };
-    }
+    // Fallback to enhanced local responses
+    return generateFallbackAdvice(userQuestion, userProfile);
   }
 }
 
@@ -366,8 +343,7 @@ With consistent ₹${userProfile.monthlySavings.toLocaleString()}/month investme
 4. Rebalance portfolio annually
 
 *Note: This is a simulated response. Connect Hugging Face API for AI-powered advice.*`
-    };
-  }
+  };
 }
 
 // Utility function to get available models
