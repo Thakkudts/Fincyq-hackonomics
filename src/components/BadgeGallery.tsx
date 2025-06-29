@@ -30,9 +30,9 @@ export default function BadgeGallery({
   const categories = Object.entries(badgeCategories);
 
   return (
-    <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-6 border-b border-white/10">
+    <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 w-full h-full flex flex-col">
+      {/* Header - Fixed */}
+      <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-6 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -108,8 +108,8 @@ export default function BadgeGallery({
         </div>
       </div>
 
-      {/* Badge Grid */}
-      <div className="p-6">
+      {/* Badge Grid - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-6">
         {filteredBadges.length === 0 ? (
           <div className="text-center py-12">
             <Trophy size={64} className="text-white/20 mx-auto mb-4" />
@@ -117,7 +117,7 @@ export default function BadgeGallery({
             <p className="text-white/60">Try adjusting your filters or start completing financial milestones!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
             {filteredBadges.map((badge) => (
               <BadgeCard
                 key={badge.id}

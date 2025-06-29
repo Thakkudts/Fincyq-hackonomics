@@ -426,7 +426,7 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
       {/* Badge Gallery Modal */}
       {showBadgeGallery && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-7xl max-h-[95vh] overflow-hidden">
+          <div className="w-full max-w-7xl h-[90vh] relative">
             <BadgeGallery
               badges={badges}
               earnedCount={earnedBadges.length}
@@ -436,7 +436,7 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
             />
             <button
               onClick={() => setShowBadgeGallery(false)}
-              className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+              className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors z-10"
             >
               <X size={20} />
             </button>
