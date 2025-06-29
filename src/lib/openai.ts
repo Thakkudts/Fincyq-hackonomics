@@ -31,7 +31,7 @@ export async function generateFinancialAdvice(
 
   try {
     // Construct the dynamic prompt with user profile
-    const systemPrompt = \You are FutureFundr, a friendly and smart financial advisor. Give clear, actionable, personalized financial guidance using Indian currency (₹) and relevant strategies. 
+    const systemPrompt = `You are FutureFundr, a friendly and smart financial advisor. Give clear, actionable, personalized financial guidance using Indian currency (₹) and relevant strategies. 
 
 Always format your responses with:
 - **Bold headings** for main sections
