@@ -1,4 +1,3 @@
-```
 import { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { generateFinancialAdvice, generateFallbackAdvice, isOpenAIConfigured } from '../lib/openai';
@@ -203,7 +202,7 @@ export function useAIAdvice(userId?: string) {
 
   const regenerateAdvice = async (originalPrompt: string, userProfile: UserProfile): Promise<{ success: boolean; advice?: string; error?: string }> => {
     // Add slight variation to get different response
-    const modifiedPrompt = \`${originalPrompt}\n\nPlease provide a fresh perspective on this question.`;
+    const modifiedPrompt = `${originalPrompt}\n\nPlease provide a fresh perspective on this question.`;
     return generateAIAdvice(modifiedPrompt, userProfile);
   };
 
@@ -246,4 +245,3 @@ export function categorizePrompt(prompt: string): string {
   
   return 'General';
 }
-```
