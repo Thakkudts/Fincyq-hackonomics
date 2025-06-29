@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { generateFinancialAdvice, generateFallbackAdvice, isOpenAIConfigured } from '../lib/openai';
+import { generateFinancialAdvice, generateFallbackAdvice } from '../lib/huggingface';
 import { SavedAIAdvice, UserProfile } from '../types';
 
 export function useAIAdvice(userId?: string) {
@@ -167,23 +167,15 @@ export function useAIAdvice(userId?: string) {
     setError(null);
 
     try {
-      let result;
-      
-      if (isOpenAIConfigured) {
-        // Use real OpenAI API
-        result = await generateFinancialAdvice(prompt, {
-          age: userProfile.age,
-          income: userProfile.income,
-          currentSavings: userProfile.currentSavings,
-          monthlySavings: userProfile.monthlySavings,
-          monthlyExpenses: userProfile.monthlyExpenses,
-          goals: userProfile.goals,
-          riskTolerance: userProfile.riskTolerance
-        });
-      } else {
-        // Use fallback simulation
-        result = await generateFallbackAdvice(prompt, userProfile);
-      }
+      const result = await generateFinancialAdvice(prompt, {
+        age: userProfile.age,
+        income: userProfile.income,
+        currentSavings: userProfile.currentSavings,
+        monthlySavings: userProfile.monthlySavings,
+        monthlyExpenses: userProfile.monthlyExpenses,
+        goals: userProfile.goals,
+        riskTolerance: userProfile.riskTolerance
+      });
       
       if (result.success && result.response) {
         return { success: true, advice: result.response };
@@ -225,7 +217,7 @@ export function useAIAdvice(userId?: string) {
     loadSavedAdvice,
     generateAIAdvice,
     regenerateAdvice,
-    isOpenAIConfigured,
+    isOpenAIConfigured: true, // Keep for backward compatibility
   };
 }
 

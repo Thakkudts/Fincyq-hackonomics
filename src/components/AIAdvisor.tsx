@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { UserProfile, SavedAIAdvice } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useAIAdvice, categorizePrompt } from '../hooks/useAIAdvice';
-import { isOpenAIConfigured } from '../lib/openai';
+import { isHuggingFaceConfigured } from '../lib/huggingface';
 import { formatCurrency } from '../utils/financialCalculations';
 import { 
   Brain, 
@@ -24,7 +24,8 @@ import {
   ExternalLink,
   RefreshCw,
   Zap,
-  Settings
+  Settings,
+  Cpu
 } from 'lucide-react';
 
 interface AIAdvisorProps {
@@ -52,7 +53,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
     deleteAdvice, 
     generateAIAdvice, 
     regenerateAdvice,
-    isOpenAIConfigured: openAIConfigured 
+    isOpenAIConfigured: apiConfigured 
   } = useAIAdvice(user?.id);
 
   const handleAskQuestion = async () => {
@@ -194,28 +195,44 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
             <Brain size={24} className="text-white" />
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white">AI-Powered Advisor</h2>
-            <p className="text-white/60">Get personalized financial advice tailored to your profile</p>
+            <h2 className="text-2xl font-bold text-white">AI-Powered Financial Advisor</h2>
+            <p className="text-white/60">Get personalized financial advice powered by Mistral AI</p>
           </div>
           
           {/* API Status Indicator */}
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${openAIConfigured ? 'bg-green-400' : 'bg-yellow-400'}`} />
-            <span className="text-white/60 text-xs">
-              {openAIConfigured ? 'OpenAI Connected' : 'Fallback Mode'}
+            <div className={`w-2 h-2 rounded-full ${isHuggingFaceConfigured ? 'bg-green-400' : 'bg-yellow-400'}`} />
+            <span className="text-white/60 text-xs flex items-center gap-1">
+              <Cpu size={12} />
+              {isHuggingFaceConfigured ? 'Mistral AI' : 'Fallback Mode'}
             </span>
           </div>
         </div>
 
         {/* Configuration Notice */}
-        {!openAIConfigured && (
+        {!isHuggingFaceConfigured && (
           <div className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-3 mb-4">
             <div className="flex items-center gap-2 text-yellow-400 text-sm">
               <Settings size={16} />
               <span className="font-medium">Using Fallback Mode</span>
             </div>
             <p className="text-yellow-300 text-xs mt-1">
-              Add VITE_OPENAI_API_KEY to your .env file for real AI-powered responses
+              Add VITE_HUGGINGFACE_API_KEY to your .env file for real AI-powered responses from Mistral AI
+            </p>
+            <p className="text-yellow-300 text-xs mt-1">
+              Get your free API key at: <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="underline">huggingface.co/settings/tokens</a>
+            </p>
+          </div>
+        )}
+
+        {isHuggingFaceConfigured && (
+          <div className="bg-green-500/20 border border-green-400/30 rounded-lg p-3 mb-4">
+            <div className="flex items-center gap-2 text-green-400 text-sm">
+              <Cpu size={16} />
+              <span className="font-medium">Powered by Mistral AI via Hugging Face</span>
+            </div>
+            <p className="text-green-300 text-xs mt-1">
+              Using advanced language models for personalized financial advice
             </p>
           </div>
         )}
@@ -273,12 +290,12 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                   {isGenerating ? (
                     <>
                       <Loader2 size={20} className="animate-spin" />
-                      {openAIConfigured ? 'Generating AI Advice...' : 'Generating Advice...'}
+                      {isHuggingFaceConfigured ? 'Generating AI Advice...' : 'Generating Advice...'}
                     </>
                   ) : (
                     <>
                       <Brain size={20} />
-                      🧠 Get Advice
+                      🤖 Get AI Advice
                     </>
                   )}
                 </button>
@@ -316,7 +333,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <Sparkles className="text-yellow-400" />
-                    {openAIConfigured ? 'AI Financial Advisor (GPT-3.5-Turbo)' : 'Financial Advisor (Fallback)'}
+                    {isHuggingFaceConfigured ? 'Mistral AI Financial Advisor' : 'Financial Advisor (Fallback)'}
                   </h3>
                   
                   {currentResponse && (
@@ -347,9 +364,11 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                     <Loader2 size={24} className="animate-spin text-purple-400" />
                     <div>
                       <div className="text-white font-medium">
-                        {openAIConfigured ? 'Analyzing your financial profile with AI...' : 'Analyzing your financial profile...'}
+                        {isHuggingFaceConfigured ? 'Analyzing your financial profile with Mistral AI...' : 'Analyzing your financial profile...'}
                       </div>
-                      <div className="text-white/60 text-sm">This may take a few seconds</div>
+                      <div className="text-white/60 text-sm">
+                        {isHuggingFaceConfigured ? 'This may take 10-30 seconds for the model to load' : 'This may take a few seconds'}
+                      </div>
                     </div>
                   </div>
                 ) : (
