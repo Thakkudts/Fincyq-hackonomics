@@ -67,3 +67,13 @@ export interface InsuranceAdvice {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface SavedAIAdvice {
+  id: string;
+  userId: string;
+  prompt: string;
+  response: string;
+  category: string;
+  createdAt: string;
+  updatedAt: string;
+}

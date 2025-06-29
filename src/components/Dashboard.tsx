@@ -11,6 +11,7 @@ import DisasterMode from './DisasterMode';
 import DreamMode from './DreamMode';
 import FinancialProtection from './FinancialProtection';
 import BranchingPaths from './BranchingPaths';
+import AIAdvisor from './AIAdvisor';
 import { calculateTimeline, scenarios, formatCurrency } from '../utils/financialCalculations';
 import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch } from 'lucide-react';
 
@@ -220,6 +221,9 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Timeline */}
           <div className="lg:col-span-2 space-y-8">
+            {/* AI Advisor Card */}
+            <AIAdvisor profile={profile} />
+
             {/* Scenario Selector */}
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
               <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">

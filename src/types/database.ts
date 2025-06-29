@@ -150,6 +150,35 @@ export interface Database {
           updated_at?: string;
         };
       };
+      saved_ai_advice: {
+        Row: {
+          id: string;
+          user_id: string;
+          prompt: string;
+          response: string;
+          category: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          prompt: string;
+          response: string;
+          category?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          prompt?: string;
+          response?: string;
+          category?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
