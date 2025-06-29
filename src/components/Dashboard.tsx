@@ -17,6 +17,7 @@ import BadgeGallery from './BadgeGallery';
 import BadgeSummaryWidget from './BadgeSummaryWidget';
 import BadgeUnlocked from './BadgeUnlocked';
 import BadgeModal from './BadgeModal';
+import FinancialOptimizer from './FinancialOptimizer';
 import { calculateTimeline, scenarios, formatCurrency } from '../utils/financialCalculations';
 import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch, Trophy, X } from 'lucide-react';
 
@@ -35,6 +36,7 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
   const [showFinancialProtection, setShowFinancialProtection] = useState(false);
   const [showBranchingPaths, setShowBranchingPaths] = useState(false);
   const [showBadgeGallery, setShowBadgeGallery] = useState(false);
+  const [showFinancialOptimizer, setShowFinancialOptimizer] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [timelineData, setTimelineData] = useState<any[]>([]);
 
@@ -93,6 +95,12 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
   const handleFinancialProtectionOpen = () => {
     setShowFinancialProtection(true);
     markInsuranceToolUsed();
+  };
+
+  const handleOptimizationApply = (suggestions: any[]) => {
+    // Here you could update the profile with the optimization suggestions
+    console.log('Applying optimizations:', suggestions);
+    // You might want to show a success message or update the profile state
   };
 
   return (
@@ -414,14 +422,26 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
               />
             </div>
 
-            {/* Action Button */}
-            <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2">
+            {/* Optimize Plan Button */}
+            <button 
+              onClick={() => setShowFinancialOptimizer(true)}
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 active:scale-95"
+            >
               <Zap size={20} />
               Optimize My Plan
             </button>
           </div>
         </div>
       </div>
+
+      {/* Financial Optimizer Modal */}
+      {showFinancialOptimizer && (
+        <FinancialOptimizer
+          profile={profile}
+          onClose={() => setShowFinancialOptimizer(false)}
+          onApplyOptimization={handleOptimizationApply}
+        />
+      )}
 
       {/* Badge Gallery Modal */}
       {showBadgeGallery && (
