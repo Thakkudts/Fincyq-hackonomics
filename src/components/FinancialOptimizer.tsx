@@ -113,7 +113,7 @@ export default function FinancialOptimizer({ profile, onClose, onApplyOptimizati
         id: 'increase-savings-rate',
         type: 'savings_increase',
         title: 'Boost Savings Rate to 20%',
-        description: `Increase monthly savings by ₹${targetIncrease.toLocaleString()} to reach the recommended 20% savings rate.`,
+        description: `Increase monthly savings by ${formatCurrency(targetIncrease)} to reach the recommended 20% savings rate.`,
         impact: { 
           monthlySavings: targetIncrease,
           newSavingsRate: 0.2 
@@ -124,23 +124,46 @@ export default function FinancialOptimizer({ profile, onClose, onApplyOptimizati
       });
     }
 
-    // Goal adjustment suggestions
+    // Goal adjustment suggestions - FIXED: Realistic delays within human lifespan
     userProfile.goals.forEach(goal => {
       const feasibility = calculateGoalFeasibility(userProfile, goal);
+      const currentYear = new Date().getFullYear();
+      const yearsToGoal = goal.targetYear - currentYear;
+      const maxAge = userProfile.age + 40; // Maximum reasonable planning horizon
+      const maxYearToConsider = currentYear + (maxAge - userProfile.age);
       
-      if (!feasibility.feasible && feasibility.shortfall > userProfile.monthlySavings * 0.5) {
-        const delayMonths = Math.ceil(feasibility.shortfall / (userProfile.monthlySavings * 0.1)) * 6;
+      if (!feasibility.feasible && feasibility.shortfall > 0 && goal.targetYear < maxYearToConsider) {
+        // Calculate realistic delay: 6 months to 5 years maximum
+        const shortfallRatio = feasibility.shortfall / userProfile.monthlySavings;
+        let delayMonths = Math.min(Math.max(6, Math.ceil(shortfallRatio * 6)), 60); // 6 months to 5 years max
+        
+        // Ensure the delayed goal doesn't exceed reasonable planning horizon
+        const newTargetYear = goal.targetYear + Math.ceil(delayMonths / 12);
+        if (newTargetYear > maxYearToConsider) {
+          delayMonths = Math.max(6, (maxYearToConsider - goal.targetYear) * 12);
+        }
+        
         const delayYears = Math.floor(delayMonths / 12);
         const remainingMonths = delayMonths % 12;
+        const monthlySavingsReduction = Math.round(feasibility.shortfall * 0.6); // More conservative reduction
+        
+        let delayDescription = '';
+        if (delayYears > 0 && remainingMonths > 0) {
+          delayDescription = `${delayYears} year${delayYears > 1 ? 's' : ''} and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
+        } else if (delayYears > 0) {
+          delayDescription = `${delayYears} year${delayYears > 1 ? 's' : ''}`;
+        } else {
+          delayDescription = `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
+        }
         
         suggestions.push({
           id: `delay-goal-${goal.id}`,
           type: 'goal_adjustment',
           title: `Adjust Timeline for "${goal.name}"`,
-          description: `Delay this goal by ${delayYears > 0 ? `${delayYears} year${delayYears > 1 ? 's' : ''}` : ''}${delayYears > 0 && remainingMonths > 0 ? ' and ' : ''}${remainingMonths > 0 ? `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}` : ''} to reduce monthly financial strain by ₹${Math.round(feasibility.shortfall * 0.7).toLocaleString()}.`,
+          description: `Delay this goal by ${delayDescription} to reduce monthly financial strain by ${formatCurrency(monthlySavingsReduction)}.`,
           impact: { 
             goalDelay: { goalId: goal.id, months: delayMonths },
-            monthlySavings: Math.round(feasibility.shortfall * 0.7)
+            monthlySavings: monthlySavingsReduction
           },
           priority: 'medium',
           difficulty: 'easy',
@@ -169,7 +192,7 @@ export default function FinancialOptimizer({ profile, onClose, onApplyOptimizati
         id: 'skill-development',
         type: 'savings_increase',
         title: 'Invest in Skill Development',
-        description: 'Allocate ₹2,000/month for courses, certifications, or skills that can increase your income by 15-25% within 1-2 years.',
+        description: `Allocate ${formatCurrency(2000)}/month for courses, certifications, or skills that can increase your income by 15-25% within 1-2 years.`,
         impact: { monthlySavings: -2000 }, // Short-term cost for long-term gain
         priority: 'medium',
         difficulty: 'moderate',
@@ -526,7 +549,10 @@ export default function FinancialOptimizer({ profile, onClose, onApplyOptimizati
                                 <div className="flex items-center gap-2">
                                   <Clock size={16} className="text-orange-400" />
                                   <span className="text-orange-400 font-medium">
-                                    +{Math.ceil(suggestion.impact.goalDelay.months / 12)} year delay
+                                    {suggestion.impact.goalDelay.months < 12 
+                                      ? `+${suggestion.impact.goalDelay.months} month${suggestion.impact.goalDelay.months > 1 ? 's' : ''} delay`
+                                      : `+${Math.ceil(suggestion.impact.goalDelay.months / 12)} year${Math.ceil(suggestion.impact.goalDelay.months / 12) > 1 ? 's' : ''} delay`
+                                    }
                                   </span>
                                 </div>
                               )}
