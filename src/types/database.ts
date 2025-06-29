@@ -47,7 +47,7 @@ export interface Database {
           target_amount: number;
           target_year: number;
           priority: 'high' | 'medium' | 'low';
-          category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other';
+          category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other' | 'car';
           created_at: string;
           updated_at: string;
         };
@@ -58,7 +58,7 @@ export interface Database {
           target_amount: number;
           target_year: number;
           priority: 'high' | 'medium' | 'low';
-          category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other';
+          category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other' | 'car';
           created_at?: string;
           updated_at?: string;
         };
@@ -69,7 +69,7 @@ export interface Database {
           target_amount?: number;
           target_year?: number;
           priority?: 'high' | 'medium' | 'low';
-          category?: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other';
+          category?: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other' | 'car';
           created_at?: string;
           updated_at?: string;
         };
@@ -189,7 +189,7 @@ export interface Database {
     Enums: {
       risk_tolerance: 'conservative' | 'moderate' | 'aggressive';
       goal_priority: 'high' | 'medium' | 'low';
-      goal_category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other';
+      goal_category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other' | 'car';
       insurance_type: 'health' | 'life' | 'disability' | 'auto' | 'home' | 'umbrella';
       insurance_priority: 'high' | 'medium' | 'low';
       insurance_status: 'active' | 'pending' | 'researching';

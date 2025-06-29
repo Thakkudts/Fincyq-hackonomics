@@ -10,6 +10,7 @@ interface OnboardingProps {
 
 const goalCategories = [
   { id: 'home', name: 'Buy a Home', icon: '🏠' },
+  { id: 'car', name: 'Buy a Car', icon: '🚗' },
   { id: 'education', name: 'Education', icon: '📚' },
   { id: 'travel', name: 'Travel', icon: '✈️' },
   { id: 'retirement', name: 'Retirement', icon: '🏖️' },

@@ -14,7 +14,7 @@ export interface FinancialGoal {
   targetAmount: number;
   targetYear: number;
   priority: 'high' | 'medium' | 'low';
-  category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other';
+  category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other' | 'car';
 }
 
 export interface TimelineScenario {

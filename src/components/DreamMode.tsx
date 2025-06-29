@@ -49,19 +49,19 @@ interface DreamModeProps {
 
 const dreamCategories = [
   { id: 'home', name: 'Home & Property', icon: Home, color: 'bg-blue-500', examples: ['Buy a Home', 'Down Payment', 'Home Renovation'] },
+  { id: 'car', name: 'Vehicle', icon: Car, color: 'bg-red-500', examples: ['Dream Car', 'Electric Vehicle', 'Motorcycle'] },
   { id: 'travel', name: 'Travel & Adventure', icon: Plane, color: 'bg-green-500', examples: ['Europe Trip', 'World Tour', 'Honeymoon'] },
   { id: 'education', name: 'Education', icon: GraduationCap, color: 'bg-purple-500', examples: ['Masters Abroad', 'MBA', 'Certification Course'] },
-  { id: 'car', name: 'Vehicle', icon: Car, color: 'bg-red-500', examples: ['Dream Car', 'Electric Vehicle', 'Motorcycle'] },
   { id: 'business', name: 'Business & Investment', icon: Building, color: 'bg-orange-500', examples: ['Start Business', 'Investment Property', 'Franchise'] },
   { id: 'other', name: 'Other Dreams', icon: Heart, color: 'bg-pink-500', examples: ['Wedding', 'Emergency Fund', 'Gadgets'] }
 ];
 
 const dreamExamples = [
   { name: 'Buy a Home in Goa', cost: 2500000, category: 'home' as const },
+  { name: 'Tesla Model 3', cost: 6000000, category: 'car' as const },
   { name: 'Europe Trip', cost: 400000, category: 'travel' as const },
   { name: 'Launch My Startup', cost: 800000, category: 'business' as const },
   { name: 'Masters Abroad', cost: 3000000, category: 'education' as const },
-  { name: 'Tesla Model 3', cost: 6000000, category: 'car' as const },
   { name: 'Dream Wedding', cost: 1500000, category: 'other' as const }
 ];
 
