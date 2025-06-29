@@ -217,7 +217,7 @@ export async function generateFallbackAdvice(
 • **International Funds:** ₹${Math.round(userProfile.monthlySavings * 0.1 / 1000) * 1000}/month
 • **Debt Funds:** ₹${Math.round(userProfile.monthlySavings * 0.2 / 1000) * 1000}/month
 
-
+*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
     };
   }
 
@@ -258,7 +258,7 @@ ${userProfile.riskTolerance === 'aggressive' ?
 3. Review and rebalance quarterly
 4. Stay invested for minimum 7-10 years
 
-`
+*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
     };
   }
 
@@ -347,7 +347,7 @@ With consistent ₹${userProfile.monthlySavings.toLocaleString()}/month investme
 3. Monitor progress quarterly
 4. Rebalance portfolio annually
 
-`
+*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
   };
 }
 
