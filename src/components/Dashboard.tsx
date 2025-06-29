@@ -18,7 +18,7 @@ import BadgeSummaryWidget from './BadgeSummaryWidget';
 import BadgeUnlocked from './BadgeUnlocked';
 import BadgeModal from './BadgeModal';
 import { calculateTimeline, scenarios, formatCurrency } from '../utils/financialCalculations';
-import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch, Trophy } from 'lucide-react';
+import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch, Trophy, X } from 'lucide-react';
 
 interface DashboardProps {
   profile: UserProfile;
