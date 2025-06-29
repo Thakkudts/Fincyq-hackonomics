@@ -316,7 +316,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <Sparkles className="text-yellow-400" />
-                    {openAIConfigured ? 'AI Financial Advisor (GPT-4)' : 'Financial Advisor (Fallback)'}
+                    {openAIConfigured ? 'AI Financial Advisor (GPT-3.5-Turbo)' : 'Financial Advisor (Fallback)'}
                   </h3>
                   
                   {currentResponse && (
