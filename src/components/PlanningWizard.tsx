@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile } from '../types';
 import { formatCurrency, calculateTimeline, scenarios } from '../utils/financialCalculations';
+import { useAudioNarration } from '../hooks/useAudioNarration';
+import AudioControls from './AudioControls';
 import { 
   X, 
   Play, 
@@ -24,7 +26,9 @@ import {
   Clock,
   Shield,
   Trophy,
-  Rocket
+  Rocket,
+  Volume2,
+  Settings
 } from 'lucide-react';
 
 interface StorySlide {
@@ -45,10 +49,23 @@ interface PlanningWizardProps {
 
 export default function PlanningWizard({ profile, onClose, onStartPlan }: PlanningWizardProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [slides, setSlides] = useState<StorySlide[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [autoPlay, setAutoPlay] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState('pNInz6obpgDQGcFmaJgB'); // Adam voice
+
+  // Audio narration hook
+  const {
+    audioState,
+    generateAudio,
+    play,
+    pause,
+    stop,
+    replay,
+    seek,
+    setVolume,
+    isConfigured
+  } = useAudioNarration(selectedVoice);
 
   useEffect(() => {
     generatePersonalizedStory();
@@ -56,13 +73,23 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (autoPlay && isPlaying && currentSlide < slides.length - 1) {
-      interval = setTimeout(() => {
-        nextSlide();
-      }, 4000); // 4 seconds per slide in auto mode
+    if (autoPlay && audioState.isPlaying && currentSlide < slides.length - 1) {
+      // Auto-advance when audio finishes
+      if (audioState.currentTime >= audioState.duration && audioState.duration > 0) {
+        interval = setTimeout(() => {
+          nextSlide();
+        }, 1000); // 1 second delay after audio ends
+      }
     }
     return () => clearTimeout(interval);
-  }, [autoPlay, isPlaying, currentSlide, slides.length]);
+  }, [autoPlay, audioState.isPlaying, audioState.currentTime, audioState.duration, currentSlide, slides.length]);
+
+  // Generate audio when slide changes
+  useEffect(() => {
+    if (slides[currentSlide]) {
+      generateAudio(slides[currentSlide].narration);
+    }
+  }, [currentSlide, slides, generateAudio]);
 
   const generatePersonalizedStory = () => {
     const userName = 'You'; // Could be personalized with actual user name
@@ -234,7 +261,9 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
 
   const toggleAutoPlay = () => {
     setAutoPlay(!autoPlay);
-    setIsPlaying(!autoPlay);
+    if (!autoPlay && audioState.hasAudio) {
+      play();
+    }
   };
 
   const handleStartPlan = () => {
@@ -243,6 +272,18 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
       onStartPlan?.();
       onClose();
     }, 1500);
+  };
+
+  const handlePlayPause = () => {
+    if (audioState.isPlaying) {
+      pause();
+    } else {
+      if (audioState.hasAudio) {
+        play();
+      } else {
+        generateAudio(slides[currentSlide]?.narration || '');
+      }
+    }
   };
 
   const currentSlideData = slides[currentSlide];
@@ -272,7 +313,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
         </div>
       )}
 
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl w-full max-w-4xl h-[90vh] flex flex-col border border-white/20 overflow-hidden">
+      <div className="bg-white/10 backdrop-blur-lg rounded-3xl w-full max-w-5xl h-[95vh] flex flex-col border border-white/20 overflow-hidden">
         {/* Header with Progress */}
         <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 p-6 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
@@ -298,6 +339,15 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                 {autoPlay ? <Zap size={16} /> : <Play size={16} />}
                 {autoPlay ? 'Auto' : 'Manual'}
               </button>
+              
+              {/* Voice Settings */}
+              {isConfigured && (
+                <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2 border border-white/20">
+                  <Volume2 size={16} className="text-blue-400" />
+                  <span className="text-white/80 text-sm">AI Voice</span>
+                </div>
+              )}
+              
               <button
                 onClick={onClose}
                 className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
@@ -326,7 +376,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
 
         {/* Story Content */}
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="max-w-3xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto text-center">
             {/* Story Icon */}
             <div className={`w-24 h-24 bg-gradient-to-br ${currentSlideData.color} rounded-full flex items-center justify-center mx-auto mb-8 ${
               currentSlideData.animation === 'bounce' ? 'animate-bounce' :
@@ -348,6 +398,18 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                 {currentSlideData.narration}
               </p>
             </div>
+
+            {/* Audio Controls */}
+            <AudioControls
+              audioState={audioState}
+              onPlay={handlePlayPause}
+              onPause={pause}
+              onReplay={replay}
+              onSeek={seek}
+              onVolumeChange={setVolume}
+              isConfigured={isConfigured}
+              className="mb-8"
+            />
 
             {/* Slide Indicators */}
             <div className="flex justify-center gap-2 mb-8">
