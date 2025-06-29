@@ -1,4 +1,3 @@
-```
 // OpenAI API integration
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
@@ -32,7 +31,7 @@ export async function generateFinancialAdvice(
 
   try {
     // Construct the dynamic prompt with user profile
-    const systemPrompt = `You are FutureFundr, a friendly and smart financial advisor. Give clear, actionable, personalized financial guidance using Indian currency (₹) and relevant strategies. 
+    const systemPrompt = \`You are FutureFundr, a friendly and smart financial advisor. Give clear, actionable, personalized financial guidance using Indian currency (₹) and relevant strategies. 
 
 Always format your responses with:
 - **Bold headings** for main sections
@@ -205,4 +204,3 @@ Based on your profile analysis, here are my recommendations:
 *Remember: Consistency beats perfection in financial planning!*`
   };
 }
-```
