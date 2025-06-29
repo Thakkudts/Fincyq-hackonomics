@@ -13,6 +13,7 @@ const MODELS = {
 
 export const isHuggingFaceConfigured = !!(HUGGINGFACE_API_KEY && 
   HUGGINGFACE_API_KEY !== 'your_huggingface_api_key' &&
+  HUGGINGFACE_API_KEY.length > 10 &&
   HUGGINGFACE_API_KEY.startsWith('hf_'));
 
 export interface HuggingFaceResponse {
@@ -87,6 +88,7 @@ export async function generateFinancialAdvice(
   }
 ): Promise<HuggingFaceResponse> {
   if (!isHuggingFaceConfigured) {
+    console.log('Hugging Face not configured, using fallback mode');
     return generateFallbackAdvice(userQuestion, userProfile);
   }
 
@@ -128,6 +130,7 @@ ${userContext} [/INST]`;
     // Try Mistral 7B first, fallback to other models if needed
     let result;
     try {
+      console.log('Trying Mistral 7B v0.2...');
       result = await queryHuggingFace(MODELS.MISTRAL_7B_V2, fullPrompt);
     } catch (error) {
       console.log('Mistral 7B v0.2 failed, trying Zephyr 7B...');
@@ -156,6 +159,7 @@ ${userContext} [/INST]`;
       throw new Error('Empty response from model');
     }
 
+    console.log('✅ Successfully generated AI response from Hugging Face');
     return {
       success: true,
       response: responseText
@@ -165,6 +169,7 @@ ${userContext} [/INST]`;
     console.error('Hugging Face API Error:', error);
     
     // Fallback to enhanced local responses
+    console.log('Falling back to local response generation');
     return generateFallbackAdvice(userQuestion, userProfile);
   }
 }
@@ -212,7 +217,7 @@ export async function generateFallbackAdvice(
 • **International Funds:** ₹${Math.round(userProfile.monthlySavings * 0.1 / 1000) * 1000}/month
 • **Debt Funds:** ₹${Math.round(userProfile.monthlySavings * 0.2 / 1000) * 1000}/month
 
-*Start immediately - every year of delay adds 2-3 years to your retirement timeline!*`
+*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
     };
   }
 
@@ -253,7 +258,7 @@ ${userProfile.riskTolerance === 'aggressive' ?
 3. Review and rebalance quarterly
 4. Stay invested for minimum 7-10 years
 
-*Remember: Time in market beats timing the market!*`
+*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
     };
   }
 
@@ -292,7 +297,7 @@ ${userProfile.monthlyExpenses * 0.3 < (affordablePrice - downPayment) * 0.0075 ?
 If you continue renting and invest ₹${Math.round(downPayment * 0.1 / 1000) * 1000}/month in equity:
 • **Potential value in 10 years:** ₹${((downPayment * 0.1 * 12 * ((Math.pow(1.12, 10) - 1) / 0.12)) / 100000).toFixed(0)} lakhs
 
-*Consider your lifestyle, job stability, and long-term plans before deciding!*`
+*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
     };
   }
 
@@ -342,7 +347,7 @@ With consistent ₹${userProfile.monthlySavings.toLocaleString()}/month investme
 3. Monitor progress quarterly
 4. Rebalance portfolio annually
 
-*Note: This is a simulated response. Connect Hugging Face API for AI-powered advice.*`
+*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
   };
 }
 
