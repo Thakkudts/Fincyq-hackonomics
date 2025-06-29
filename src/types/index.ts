@@ -77,3 +77,37 @@ export interface SavedAIAdvice {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+  category: 'savings' | 'planning' | 'protection' | 'exploration' | 'achievement';
+  criteria: BadgeCriteria;
+  unlocked: boolean;
+  unlockedAt?: string;
+  progress: number;
+  maxProgress: number;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+}
+
+export interface BadgeCriteria {
+  type: 'savings_amount' | 'emergency_fund' | 'goals_count' | 'disaster_survival' | 'risk_assessment' | 'insurance_usage' | 'timeline_exploration' | 'dream_goals' | 'expense_tracking' | 'ai_usage';
+  threshold: number;
+  description: string;
+}
+
+export interface UserProgress {
+  totalSavings: number;
+  emergencyFundMonths: number;
+  goalsCount: number;
+  dreamGoalsCount: number;
+  disasterSurvivalScore: number;
+  riskAssessmentComplete: boolean;
+  insuranceToolUsed: boolean;
+  timelinesExplored: string[];
+  expenseTrackingDays: number;
+  aiQuestionsAsked: number;
+  badgesEarned: string[];
+}

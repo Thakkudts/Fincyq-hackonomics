@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UserProfile } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useBadges } from '../hooks/useBadges';
 import Timeline from './Timeline';
 import LifeMap from './LifeMap';
 import EducationalTip from './EducationalTip';
@@ -12,8 +13,12 @@ import DreamMode from './DreamMode';
 import FinancialProtection from './FinancialProtection';
 import BranchingPaths from './BranchingPaths';
 import AIAdvisor from './AIAdvisor';
+import BadgeGallery from './BadgeGallery';
+import BadgeSummaryWidget from './BadgeSummaryWidget';
+import BadgeUnlocked from './BadgeUnlocked';
+import BadgeModal from './BadgeModal';
 import { calculateTimeline, scenarios, formatCurrency } from '../utils/financialCalculations';
-import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch } from 'lucide-react';
+import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch, Trophy } from 'lucide-react';
 
 interface DashboardProps {
   profile: UserProfile;
@@ -29,10 +34,21 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
   const [showDreamMode, setShowDreamMode] = useState(false);
   const [showFinancialProtection, setShowFinancialProtection] = useState(false);
   const [showBranchingPaths, setShowBranchingPaths] = useState(false);
+  const [showBadgeGallery, setShowBadgeGallery] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState(null);
   const [timelineData, setTimelineData] = useState<any[]>([]);
 
   const { user, signOut } = useAuth();
   const { saveProfile, loading: profileLoading } = useUserProfile();
+  const { 
+    badges, 
+    newlyUnlockedBadges, 
+    getEarnedBadges, 
+    getCompletionPercentage,
+    markInsuranceToolUsed,
+    markTimelineExplored,
+    clearNewlyUnlocked
+  } = useBadges(profile, user?.id);
 
   useEffect(() => {
     // Calculate timeline for all scenarios
@@ -42,10 +58,17 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
       color: scenario.color
     }));
     setTimelineData(allTimelines);
+
+    // Mark timeline exploration
+    if (allTimelines.length > 0) {
+      markTimelineExplored('current');
+    }
   }, [profile, disasterMode]);
 
   const currentScenario = scenarios[selectedScenario];
   const currentTimeline = timelineData.find(t => t.scenario === currentScenario?.name);
+  const earnedBadges = getEarnedBadges();
+  const completionPercentage = getCompletionPercentage();
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -59,6 +82,17 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleScenarioChange = (scenarioIndex: number) => {
+    setSelectedScenario(scenarioIndex);
+    const scenarioName = scenarios[scenarioIndex].name.toLowerCase().replace(' ', '_');
+    markTimelineExplored(scenarioName);
+  };
+
+  const handleFinancialProtectionOpen = () => {
+    setShowFinancialProtection(true);
+    markInsuranceToolUsed();
   };
 
   return (
@@ -83,6 +117,13 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
             </div>
             
             <div className="flex items-center gap-4">
+              {/* Badge Summary */}
+              <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2 border border-white/20">
+                <Trophy size={16} className="text-yellow-400" />
+                <span className="text-white font-medium">{earnedBadges.length}/{badges.length}</span>
+                <span className="text-white/60 text-sm">badges</span>
+              </div>
+
               {user && (
                 <button
                   onClick={handleSaveProfile}
@@ -135,6 +176,15 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
             </div>
             
             <div className="flex items-center gap-3 flex-wrap">
+              {/* Achievements Button */}
+              <button
+                onClick={() => setShowBadgeGallery(true)}
+                className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 rounded-lg text-white font-medium transition-colors flex items-center gap-2 shadow-lg"
+              >
+                <Trophy size={16} />
+                Achievements ({earnedBadges.length})
+              </button>
+
               {/* Track Expenses Button */}
               <button
                 onClick={() => setShowExpenseTracker(true)}
@@ -146,7 +196,7 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
 
               {/* Financial Protection Button */}
               <button
-                onClick={() => setShowFinancialProtection(true)}
+                onClick={handleFinancialProtectionOpen}
                 className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 rounded-lg text-white font-medium transition-colors flex items-center gap-2 shadow-lg"
               >
                 <Shield size={16} />
@@ -235,7 +285,7 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
                 {scenarios.map((scenario, index) => (
                   <button
                     key={scenario.name}
-                    onClick={() => setSelectedScenario(index)}
+                    onClick={() => handleScenarioChange(index)}
                     className={`p-4 rounded-xl text-left transition-all ${
                       selectedScenario === index
                         ? 'bg-gradient-to-br from-purple-500/30 to-blue-500/30 border-2 border-purple-400'
@@ -290,6 +340,15 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
                 </p>
               </div>
             )}
+
+            {/* Badge Summary Widget */}
+            <BadgeSummaryWidget
+              earnedBadges={earnedBadges}
+              totalBadges={badges.length}
+              completionPercentage={completionPercentage}
+              recentBadges={earnedBadges.slice(-3)}
+              onViewAll={() => setShowBadgeGallery(true)}
+            />
 
             {/* Quick Stats */}
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
@@ -363,6 +422,44 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
           </div>
         </div>
       </div>
+
+      {/* Badge Gallery Modal */}
+      {showBadgeGallery && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-7xl max-h-[95vh] overflow-hidden">
+            <BadgeGallery
+              badges={badges}
+              earnedCount={earnedBadges.length}
+              totalCount={badges.length}
+              completionPercentage={completionPercentage}
+              onBadgeClick={(badge) => setSelectedBadge(badge)}
+            />
+            <button
+              onClick={() => setShowBadgeGallery(false)}
+              className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Badge Detail Modal */}
+      {selectedBadge && (
+        <BadgeModal
+          badge={selectedBadge}
+          onClose={() => setSelectedBadge(null)}
+        />
+      )}
+
+      {/* Badge Unlock Notifications */}
+      {newlyUnlockedBadges.map((badge) => (
+        <BadgeUnlocked
+          key={badge.id}
+          badge={badge}
+          onClose={() => clearNewlyUnlocked()}
+        />
+      ))}
 
       {/* Expense Tracker Modal */}
       {showExpenseTracker && (
