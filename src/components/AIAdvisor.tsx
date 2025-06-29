@@ -1,7 +1,9 @@
+```
 import React, { useState } from 'react';
 import { UserProfile, SavedAIAdvice } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useAIAdvice, categorizePrompt } from '../hooks/useAIAdvice';
+import { isOpenAIConfigured } from '../lib/openai';
 import { formatCurrency } from '../utils/financialCalculations';
 import { 
   Brain, 
@@ -20,7 +22,10 @@ import {
   TrendingUp,
   X,
   Copy,
-  ExternalLink
+  ExternalLink,
+  RefreshCw,
+  Zap,
+  Settings
 } from 'lucide-react';
 
 interface AIAdvisorProps {
@@ -37,22 +42,50 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
   const [editingAdvice, setEditingAdvice] = useState<string | null>(null);
   const [editCategory, setEditCategory] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [lastPrompt, setLastPrompt] = useState('');
 
   const { user } = useAuth();
-  const { savedAdvice, loading, saveAdvice, updateAdvice, deleteAdvice, generateAIAdvice } = useAIAdvice(user?.id);
+  const { 
+    savedAdvice, 
+    loading, 
+    saveAdvice, 
+    updateAdvice, 
+    deleteAdvice, 
+    generateAIAdvice, 
+    regenerateAdvice,
+    isOpenAIConfigured: openAIConfigured 
+  } = useAIAdvice(user?.id);
 
   const handleAskQuestion = async () => {
     if (!question.trim() || isGenerating) return;
 
     setIsGenerating(true);
     setCurrentResponse('');
+    setLastPrompt(question.trim());
 
     const result = await generateAIAdvice(question.trim(), profile);
     
     if (result.success && result.advice) {
       setCurrentResponse(result.advice);
     } else {
-      setCurrentResponse('Sorry, I encountered an error generating advice. Please try again.');
+      setCurrentResponse(`**Error generating advice:**\n\n${result.error || 'Please try again.'}`);
+    }
+    
+    setIsGenerating(false);
+  };
+
+  const handleRegenerateAdvice = async () => {
+    if (!lastPrompt || isGenerating) return;
+
+    setIsGenerating(true);
+    setCurrentResponse('');
+
+    const result = await regenerateAdvice(lastPrompt, profile);
+    
+    if (result.success && result.advice) {
+      setCurrentResponse(result.advice);
+    } else {
+      setCurrentResponse(`**Error regenerating advice:**\n\n${result.error || 'Please try again.'}`);
     }
     
     setIsGenerating(false);
@@ -63,10 +96,10 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
 
     setIsSaving(true);
 
-    const category = categorizePrompt(question);
+    const category = categorizePrompt(lastPrompt || question);
     const result = await saveAdvice({
       userId: user.id,
-      prompt: question,
+      prompt: lastPrompt || question,
       response: currentResponse,
       category
     });
@@ -76,6 +109,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
       setTimeout(() => setShowSuccess(false), 3000);
       setQuestion('');
       setCurrentResponse('');
+      setLastPrompt('');
     }
 
     setIsSaving(false);
@@ -160,11 +194,32 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
           <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
             <Brain size={24} className="text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h2 className="text-2xl font-bold text-white">AI-Powered Advisor</h2>
             <p className="text-white/60">Get personalized financial advice tailored to your profile</p>
           </div>
+          
+          {/* API Status Indicator */}
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${openAIConfigured ? 'bg-green-400' : 'bg-yellow-400'}`} />
+            <span className="text-white/60 text-xs">
+              {openAIConfigured ? 'OpenAI Connected' : 'Fallback Mode'}
+            </span>
+          </div>
         </div>
+
+        {/* Configuration Notice */}
+        {!openAIConfigured && (
+          <div className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-3 mb-4">
+            <div className="flex items-center gap-2 text-yellow-400 text-sm">
+              <Settings size={16} />
+              <span className="font-medium">Using Fallback Mode</span>
+            </div>
+            <p className="text-yellow-300 text-xs mt-1">
+              Add VITE_OPENAI_API_KEY to your .env file for real AI-powered responses
+            </p>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 bg-white/5 rounded-lg p-1">
@@ -219,7 +274,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                   {isGenerating ? (
                     <>
                       <Loader2 size={20} className="animate-spin" />
-                      Generating Advice...
+                      {openAIConfigured ? 'Generating AI Advice...' : 'Generating Advice...'}
                     </>
                   ) : (
                     <>
@@ -262,7 +317,7 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <Sparkles className="text-yellow-400" />
-                    AI Financial Advisor
+                    {openAIConfigured ? 'AI Financial Advisor (GPT-4)' : 'Financial Advisor (Fallback)'}
                   </h3>
                   
                   {currentResponse && (
@@ -274,6 +329,16 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                       >
                         <Copy size={16} />
                       </button>
+                      {lastPrompt && (
+                        <button
+                          onClick={handleRegenerateAdvice}
+                          disabled={isGenerating}
+                          className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white/60 hover:text-white transition-colors disabled:opacity-50"
+                          title="Regenerate advice"
+                        >
+                          <RefreshCw size={16} className={isGenerating ? 'animate-spin' : ''} />
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -282,7 +347,9 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                   <div className="flex items-center gap-3 py-8">
                     <Loader2 size={24} className="animate-spin text-purple-400" />
                     <div>
-                      <div className="text-white font-medium">Analyzing your financial profile...</div>
+                      <div className="text-white font-medium">
+                        {openAIConfigured ? 'Analyzing your financial profile with AI...' : 'Analyzing your financial profile...'}
+                      </div>
                       <div className="text-white/60 text-sm">This may take a few seconds</div>
                     </div>
                   </div>
@@ -312,16 +379,27 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
                       )}
                     </button>
                     
+                    {lastPrompt && (
+                      <button
+                        onClick={handleRegenerateAdvice}
+                        disabled={isGenerating}
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <RefreshCw size={16} className={isGenerating ? 'animate-spin' : ''} />
+                        🔁 Regenerate
+                      </button>
+                    )}
+                    
                     {onConvertToDream && (
                       <button
                         onClick={() => {
                           // This would open Dream Mode with pre-filled data
                           console.log('Convert to dream plan');
                         }}
-                        className="flex-1 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2"
+                        className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2"
                       >
                         <Star size={16} />
-                        Turn into Dream Plan
+                        Turn into Dream
                       </button>
                     )}
                   </div>
@@ -476,3 +554,4 @@ export default function AIAdvisor({ profile, onConvertToDream }: AIAdvisorProps)
     </div>
   );
 }
+```
