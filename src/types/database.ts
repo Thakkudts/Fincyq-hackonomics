@@ -106,50 +106,6 @@ export interface Database {
           updated_at?: string;
         };
       };
-      insurance_advice: {
-        Row: {
-          id: string;
-          user_id: string;
-          insurance_type: 'health' | 'life' | 'disability' | 'auto' | 'home' | 'umbrella';
-          current_coverage: number;
-          recommended_coverage: number;
-          monthly_premium: number;
-          provider: string;
-          notes: string;
-          priority: 'high' | 'medium' | 'low';
-          status: 'active' | 'pending' | 'researching';
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          insurance_type: 'health' | 'life' | 'disability' | 'auto' | 'home' | 'umbrella';
-          current_coverage: number;
-          recommended_coverage: number;
-          monthly_premium: number;
-          provider: string;
-          notes: string;
-          priority: 'high' | 'medium' | 'low';
-          status: 'active' | 'pending' | 'researching';
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          insurance_type?: 'health' | 'life' | 'disability' | 'auto' | 'home' | 'umbrella';
-          current_coverage?: number;
-          recommended_coverage?: number;
-          monthly_premium?: number;
-          provider?: string;
-          notes?: string;
-          priority?: 'high' | 'medium' | 'low';
-          status?: 'active' | 'pending' | 'researching';
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
     };
     Views: {
       [_ in never]: never;
@@ -161,9 +117,6 @@ export interface Database {
       risk_tolerance: 'conservative' | 'moderate' | 'aggressive';
       goal_priority: 'high' | 'medium' | 'low';
       goal_category: 'home' | 'education' | 'travel' | 'retirement' | 'business' | 'other';
-      insurance_type: 'health' | 'life' | 'disability' | 'auto' | 'home' | 'umbrella';
-      insurance_priority: 'high' | 'medium' | 'low';
-      insurance_status: 'active' | 'pending' | 'researching';
     };
   };
 }
