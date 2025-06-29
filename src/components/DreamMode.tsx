@@ -26,7 +26,8 @@ import {
   Zap,
   Edit3,
   Trash2,
-  Save
+  Save,
+  Loader2
 } from 'lucide-react';
 
 interface Dream {
@@ -56,18 +57,20 @@ const dreamCategories = [
 ];
 
 const dreamExamples = [
-  { name: 'Buy a Home in Goa', cost: 2500000, category: 'home' },
-  { name: 'Europe Trip', cost: 400000, category: 'travel' },
-  { name: 'Launch My Startup', cost: 800000, category: 'business' },
-  { name: 'Masters Abroad', cost: 3000000, category: 'education' },
-  { name: 'Tesla Model 3', cost: 6000000, category: 'car' },
-  { name: 'Dream Wedding', cost: 1500000, category: 'other' }
+  { name: 'Buy a Home in Goa', cost: 2500000, category: 'home' as const },
+  { name: 'Europe Trip', cost: 400000, category: 'travel' as const },
+  { name: 'Launch My Startup', cost: 800000, category: 'business' as const },
+  { name: 'Masters Abroad', cost: 3000000, category: 'education' as const },
+  { name: 'Tesla Model 3', cost: 6000000, category: 'car' as const },
+  { name: 'Dream Wedding', cost: 1500000, category: 'other' as const }
 ];
 
 export default function DreamMode({ profile, onClose }: DreamModeProps) {
   const [dreams, setDreams] = useState<Dream[]>([]);
   const [activeTab, setActiveTab] = useState<'add' | 'timeline' | 'calculator'>('add');
   const [editingDream, setEditingDream] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [newDream, setNewDream] = useState({
     name: '',
     cost: '',
@@ -177,24 +180,55 @@ export default function DreamMode({ profile, onClose }: DreamModeProps) {
   };
 
   const saveDreamsToProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      setSaveStatus('error');
+      return;
+    }
     
-    // Convert dreams back to goals format
-    const updatedGoals: FinancialGoal[] = dreams.map(dream => ({
-      id: dream.id,
-      name: dream.name,
-      targetAmount: dream.cost,
-      targetYear: dream.targetYear,
-      priority: dream.achievable ? 'high' : dream.progress && dream.progress > 50 ? 'medium' : 'low',
-      category: dream.category
-    }));
+    setIsSaving(true);
+    setSaveStatus('saving');
     
-    const updatedProfile = {
-      ...profile,
-      goals: updatedGoals
-    };
-    
-    await saveProfile(updatedProfile, user.id);
+    try {
+      // Convert dreams to goals format with proper validation
+      const updatedGoals: FinancialGoal[] = dreams.map(dream => ({
+        id: dream.id,
+        name: dream.name.trim(),
+        targetAmount: Math.round(dream.cost), // Ensure it's an integer
+        targetYear: dream.targetYear,
+        priority: dream.achievable ? 'high' : dream.progress && dream.progress > 50 ? 'medium' : 'low',
+        category: dream.category // This should now work with the updated enum
+      }));
+      
+      const updatedProfile: UserProfile = {
+        ...profile,
+        goals: updatedGoals
+      };
+      
+      console.log('Saving profile with goals:', updatedGoals);
+      
+      const result = await saveProfile(updatedProfile, user.id);
+      
+      if (result.success) {
+        setSaveStatus('success');
+        setTimeout(() => {
+          setSaveStatus('idle');
+        }, 2000);
+      } else {
+        console.error('Save failed:', result.error);
+        setSaveStatus('error');
+        setTimeout(() => {
+          setSaveStatus('idle');
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error saving dreams:', error);
+      setSaveStatus('error');
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 3000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const achievableDreams = dreams.filter(d => d.achievable).length;
@@ -220,10 +254,40 @@ export default function DreamMode({ profile, onClose }: DreamModeProps) {
             <div className="flex items-center gap-3">
               <button
                 onClick={saveDreamsToProfile}
-                className="px-4 py-2 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 rounded-lg text-white font-medium transition-colors flex items-center gap-2"
+                disabled={isSaving || dreams.length === 0}
+                className={`px-4 py-2 rounded-lg text-white font-medium transition-all flex items-center gap-2 ${
+                  isSaving 
+                    ? 'bg-blue-600 cursor-wait' 
+                    : saveStatus === 'success'
+                      ? 'bg-green-600'
+                      : saveStatus === 'error'
+                        ? 'bg-red-600'
+                        : dreams.length === 0
+                          ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                          : 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600'
+                }`}
               >
-                <Save size={16} />
-                Save Dreams
+                {isSaving ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Saving Dreams...
+                  </>
+                ) : saveStatus === 'success' ? (
+                  <>
+                    <CheckCircle size={16} />
+                    Dreams Saved!
+                  </>
+                ) : saveStatus === 'error' ? (
+                  <>
+                    <XCircle size={16} />
+                    Save Failed
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} />
+                    Save Dreams ({dreams.length})
+                  </>
+                )}
               </button>
               <button
                 onClick={onClose}
@@ -262,6 +326,21 @@ export default function DreamMode({ profile, onClose }: DreamModeProps) {
               </div>
             </div>
           </div>
+
+          {/* Save Status Messages */}
+          {saveStatus === 'error' && (
+            <div className="mt-4 bg-red-500/20 border border-red-400/30 rounded-lg p-3 flex items-center gap-2">
+              <XCircle size={16} className="text-red-400" />
+              <span className="text-red-400 text-sm">Failed to save dreams. Please try again.</span>
+            </div>
+          )}
+          
+          {saveStatus === 'success' && (
+            <div className="mt-4 bg-green-500/20 border border-green-400/30 rounded-lg p-3 flex items-center gap-2">
+              <CheckCircle size={16} className="text-green-400" />
+              <span className="text-green-400 text-sm">Dreams saved successfully! Your goals have been updated.</span>
+            </div>
+          )}
         </div>
 
         {/* Tabs - Fixed */}
