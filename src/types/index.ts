@@ -52,3 +52,18 @@ export interface EducationalTip {
   category: string;
   triggerCondition: string;
 }
+
+export interface InsuranceAdvice {
+  id: string;
+  userId: string;
+  insuranceType: 'health' | 'life' | 'disability' | 'auto' | 'home' | 'umbrella';
+  currentCoverage: number;
+  recommendedCoverage: number;
+  monthlyPremium: number;
+  provider: string;
+  notes: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'active' | 'pending' | 'researching';
+  createdAt: string;
+  updatedAt: string;
+}
