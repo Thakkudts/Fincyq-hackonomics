@@ -14,12 +14,13 @@ export default function BadgeModal({ badge, onClose }: BadgeModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl max-w-md w-full border border-white/20 overflow-hidden">
-        {/* Header */}
-        <div className={`bg-gradient-to-r ${rarityColors[badge.rarity]} p-6 relative`}>
+      {/* Modal Container - Fixed height with scrolling */}
+      <div className="bg-white/10 backdrop-blur-lg rounded-3xl w-full max-w-md max-h-[90vh] border border-white/20 overflow-hidden flex flex-col">
+        {/* Header - Fixed */}
+        <div className={`bg-gradient-to-r ${rarityColors[badge.rarity]} p-6 relative flex-shrink-0`}>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors"
+            className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors z-10"
           >
             <X size={16} />
           </button>
@@ -44,96 +45,101 @@ export default function BadgeModal({ badge, onClose }: BadgeModalProps) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Description */}
-          <div>
-            <h3 className="text-white font-semibold mb-2">Description</h3>
-            <p className="text-white/80 text-sm leading-relaxed">
-              {badge.description}
-            </p>
-          </div>
-
-          {/* Category */}
-          <div>
-            <h3 className="text-white font-semibold mb-2">Category</h3>
-            <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${category.color} text-white`}>
-              <span>{category.icon}</span>
-              <span className="text-sm font-medium">{category.name}</span>
-            </div>
-          </div>
-
-          {/* Criteria */}
-          <div>
-            <h3 className="text-white font-semibold mb-2">How to Unlock</h3>
-            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-              <div className="flex items-center gap-3 mb-3">
-                <Target size={16} className="text-blue-400" />
-                <span className="text-white/80 text-sm">{badge.criteria.description}</span>
-              </div>
-              
-              {!badge.unlocked && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-white/60">
-                    <span>Progress</span>
-                    <span>{badge.progress.toLocaleString()} / {badge.maxProgress.toLocaleString()}</span>
-                  </div>
-                  <div className="w-full bg-white/10 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-blue-400 to-purple-400 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                    />
-                  </div>
-                  <div className="text-center text-xs text-white/60">
-                    {progressPercentage.toFixed(1)}% Complete
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Status */}
-          <div>
-            <h3 className="text-white font-semibold mb-2">Status</h3>
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-              badge.unlocked 
-                ? 'bg-green-500/20 border border-green-400/30' 
-                : 'bg-orange-500/20 border border-orange-400/30'
-            }`}>
-              {badge.unlocked ? (
-                <>
-                  <CheckCircle size={16} className="text-green-400" />
-                  <span className="text-green-400 text-sm font-medium">Unlocked</span>
-                  {badge.unlockedAt && (
-                    <span className="text-green-300 text-xs ml-auto">
-                      {new Date(badge.unlockedAt).toLocaleDateString()}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Lock size={16} className="text-orange-400" />
-                  <span className="text-orange-400 text-sm font-medium">Locked</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Tips */}
-          {!badge.unlocked && (
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Description */}
             <div>
-              <h3 className="text-white font-semibold mb-2">Tips to Unlock</h3>
-              <div className="bg-blue-500/20 rounded-lg p-4 border border-blue-400/30">
-                <p className="text-blue-300 text-sm">
-                  {getBadgeTips(badge)}
-                </p>
+              <h3 className="text-white font-semibold mb-2">Description</h3>
+              <p className="text-white/80 text-sm leading-relaxed">
+                {badge.description}
+              </p>
+            </div>
+
+            {/* Category */}
+            <div>
+              <h3 className="text-white font-semibold mb-2">Category</h3>
+              <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${category.color} text-white`}>
+                <span>{category.icon}</span>
+                <span className="text-sm font-medium">{category.name}</span>
               </div>
             </div>
-          )}
+
+            {/* Criteria */}
+            <div>
+              <h3 className="text-white font-semibold mb-2">How to Unlock</h3>
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <div className="flex items-center gap-3 mb-3">
+                  <Target size={16} className="text-blue-400" />
+                  <span className="text-white/80 text-sm">{badge.criteria.description}</span>
+                </div>
+                
+                {!badge.unlocked && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-white/60">
+                      <span>Progress</span>
+                      <span>{badge.progress.toLocaleString()} / {badge.maxProgress.toLocaleString()}</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-400 to-purple-400 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                      />
+                    </div>
+                    <div className="text-center text-xs text-white/60">
+                      {progressPercentage.toFixed(1)}% Complete
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <h3 className="text-white font-semibold mb-2">Status</h3>
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                badge.unlocked 
+                  ? 'bg-green-500/20 border border-green-400/30' 
+                  : 'bg-orange-500/20 border border-orange-400/30'
+              }`}>
+                {badge.unlocked ? (
+                  <>
+                    <CheckCircle size={16} className="text-green-400" />
+                    <span className="text-green-400 text-sm font-medium">Unlocked</span>
+                    {badge.unlockedAt && (
+                      <span className="text-green-300 text-xs ml-auto">
+                        {new Date(badge.unlockedAt).toLocaleDateString()}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Lock size={16} className="text-orange-400" />
+                    <span className="text-orange-400 text-sm font-medium">Locked</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Tips */}
+            {!badge.unlocked && (
+              <div>
+                <h3 className="text-white font-semibold mb-2">Tips to Unlock</h3>
+                <div className="bg-blue-500/20 rounded-lg p-4 border border-blue-400/30">
+                  <p className="text-blue-300 text-sm leading-relaxed">
+                    {getBadgeTips(badge)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Spacer for bottom padding */}
+            <div className="h-4"></div>
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-6 pt-0">
+        {/* Footer - Fixed */}
+        <div className="p-6 pt-0 flex-shrink-0 border-t border-white/10">
           <button
             onClick={onClose}
             className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl text-white font-medium transition-colors flex items-center justify-center gap-2"
