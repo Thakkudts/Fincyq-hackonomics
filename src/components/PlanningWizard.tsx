@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile } from '../types';
 import { formatCurrency, calculateTimeline, scenarios } from '../utils/financialCalculations';
+<<<<<<< HEAD
 import { useAudioNarration } from '../hooks/useAudioNarration';
 import AudioControls from './AudioControls';
+=======
+>>>>>>> origin/master
 import { 
   X, 
   Play, 
@@ -32,6 +35,10 @@ import {
   Pause,
   Loader2
 } from 'lucide-react';
+<<<<<<< HEAD
+=======
+import { useBrowserTTS } from '../hooks/useBrowserTTS';
+>>>>>>> origin/master
 
 interface StorySlide {
   id: string;
@@ -54,6 +61,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
   const [slides, setSlides] = useState<StorySlide[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [autoPlay, setAutoPlay] = useState(false);
+<<<<<<< HEAD
   const [selectedVoice, setSelectedVoice] = useState('pNInz6obpgDQGcFmaJgB'); // Adam voice
   const [autoPlayTimer, setAutoPlayTimer] = useState<NodeJS.Timeout | null>(null);
   const [isPreloading, setIsPreloading] = useState(false);
@@ -71,11 +79,15 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     setVolume,
     isConfigured
   } = useAudioNarration(selectedVoice);
+=======
+  const { isSupported, isPlaying, isPaused, isSpeaking, error, speak, pause, resume, stop } = useBrowserTTS();
+>>>>>>> origin/master
 
   useEffect(() => {
     generatePersonalizedStory();
   }, [profile]);
 
+<<<<<<< HEAD
   // Preload all audio when slides are ready
   useEffect(() => {
     if (slides.length > 0 && isConfigured) {
@@ -136,6 +148,24 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
       await generateAudio(slides[currentSlide].narration);
     }
   };
+=======
+  // Play narration for the current slide when autoplay is enabled
+  useEffect(() => {
+    if (autoPlay && slides.length > 0 && slides[currentSlide]) {
+      speak(slides[currentSlide].narration, () => {
+        // On narration end, advance to next slide or stop
+        if (currentSlide < slides.length - 1) {
+          setTimeout(() => setCurrentSlide((prev) => prev + 1), 500);
+        } else {
+          setAutoPlay(false);
+        }
+      });
+    } else {
+      stop();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, currentSlide, slides.length]);
+>>>>>>> origin/master
 
   const generatePersonalizedStory = () => {
     const userName = 'You'; // Could be personalized with actual user name
@@ -309,6 +339,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     setCurrentSlide(index);
   };
 
+<<<<<<< HEAD
   const toggleAutoPlay = () => {
     const newAutoPlay = !autoPlay;
     setAutoPlay(newAutoPlay);
@@ -333,6 +364,20 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
         generateAudio(slides[currentSlide].narration);
       }
     }
+=======
+  const handlePlayPause = () => {
+    if (!autoPlay) {
+      setAutoPlay(true);
+    } else {
+      setAutoPlay(false);
+      stop();
+    }
+  };
+
+  // Optionally, allow resume if paused
+  const handleResume = () => {
+    if (isPaused) resume();
+>>>>>>> origin/master
   };
 
   const handleStartPlan = () => {
@@ -343,6 +388,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     }, 1500);
   };
 
+<<<<<<< HEAD
   // Generate audio when slide changes
   useEffect(() => {
     if (slides[currentSlide] && !isPreloading) {
@@ -350,6 +396,8 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     }
   }, [currentSlide, slides, isPreloading]);
 
+=======
+>>>>>>> origin/master
   const currentSlideData = slides[currentSlide];
   const progress = ((currentSlide + 1) / slides.length) * 100;
 
@@ -392,13 +440,20 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
             </div>
             
             <div className="flex items-center gap-3">
+<<<<<<< HEAD
               <button
                 onClick={toggleAutoPlay}
+=======
+              {/* Single Play/Pause Button for Auto-Narration */}
+              <button
+                onClick={handlePlayPause}
+>>>>>>> origin/master
                 className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
                   autoPlay 
                     ? 'bg-green-500/20 text-green-400 border border-green-400/30' 
                     : 'bg-white/10 text-white/60 hover:text-white hover:bg-white/20'
                 }`}
+<<<<<<< HEAD
               >
                 {autoPlay ? <Zap size={16} /> : <Play size={16} />}
                 {autoPlay ? 'Auto' : 'Manual'}
@@ -410,6 +465,23 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                   <Volume2 size={16} className="text-blue-400" />
                   <span className="text-white/80 text-sm">AI Voice</span>
                 </div>
+=======
+                disabled={!isSupported}
+              >
+                {autoPlay ? <Pause size={16} /> : <Volume2 size={16} />}
+                {autoPlay ? 'Pause' : 'Play Story'}
+              </button>
+              
+              {/* Optionally show resume if paused */}
+              {isPaused && (
+                <button onClick={handleResume} className="ml-2 px-3 py-2 rounded bg-blue-500 text-white">Resume</button>
+              )}
+              {!isSupported && (
+                <span className="text-red-400 ml-2">Speech not supported in this browser.</span>
+              )}
+              {error && error !== 'Speech synthesis error' && (
+                <span className="text-red-400 ml-2">{error}</span>
+>>>>>>> origin/master
               )}
               
               <button
@@ -436,6 +508,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
               </div>
             </div>
           </div>
+<<<<<<< HEAD
 
           {/* Preloading Indicator */}
           {isPreloading && (
@@ -455,6 +528,8 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
               </div>
             </div>
           )}
+=======
+>>>>>>> origin/master
         </div>
 
         {/* Story Content - Scrollable */}
@@ -483,6 +558,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                 </p>
               </div>
 
+<<<<<<< HEAD
               {/* Audio Controls */}
               <AudioControls
                 audioState={audioState}
@@ -495,6 +571,8 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                 className="mb-8"
               />
 
+=======
+>>>>>>> origin/master
               {/* Slide Indicators */}
               <div className="flex justify-center gap-2 mb-8 flex-wrap">
                 {slides.map((_, index) => (
@@ -520,13 +598,18 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
           <div className="flex justify-between items-center">
             <button
               onClick={prevSlide}
+<<<<<<< HEAD
               disabled={currentSlide === 0}
+=======
+              disabled={currentSlide === 0 || autoPlay}
+>>>>>>> origin/master
               className="px-6 py-3 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white transition-colors flex items-center gap-2"
             >
               <ArrowRight size={16} className="rotate-180" />
               Previous
             </button>
 
+<<<<<<< HEAD
             <div className="flex items-center gap-4">
               {/* Quick Jump Buttons */}
               <div className="hidden md:flex gap-2">
@@ -549,6 +632,12 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
             {currentSlide === slides.length - 1 ? (
               <button
                 onClick={handleStartPlan}
+=======
+            {currentSlide === slides.length - 1 ? (
+              <button
+                onClick={handleStartPlan}
+                disabled={autoPlay}
+>>>>>>> origin/master
                 className="px-8 py-3 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 rounded-xl text-white font-bold transition-all flex items-center gap-2 shadow-xl hover:shadow-green-500/25 transform hover:scale-105"
               >
                 <Rocket size={20} />
@@ -557,7 +646,12 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
             ) : (
               <button
                 onClick={nextSlide}
+<<<<<<< HEAD
                 className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl text-white font-medium transition-colors flex items-center gap-2"
+=======
+                disabled={currentSlide === slides.length - 1 || autoPlay}
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white transition-colors flex items-center gap-2"
+>>>>>>> origin/master
               >
                 Next
                 <ArrowRight size={16} />
