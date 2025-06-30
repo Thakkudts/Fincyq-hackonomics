@@ -67,10 +67,7 @@ export default function FinancialProtection({ profile, onClose }: FinancialProte
     marketReaction: 'hold'
   });
   const [riskProfile, setRiskProfile] = useState<RiskProfile | null>(null);
-<<<<<<< HEAD
-=======
   const [compareModal, setCompareModal] = useState<null | { type: string, coverage: number, monthlyCost: number }>(null);
->>>>>>> origin/master
 
   const { user } = useAuth();
 
@@ -698,14 +695,10 @@ export default function FinancialProtection({ profile, onClose }: FinancialProte
                         
                         {rec.recommended && (
                           <div className="flex gap-2">
-<<<<<<< HEAD
-                            <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white text-sm transition-colors flex items-center gap-2">
-=======
                             <button
                               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white text-sm transition-colors flex items-center gap-2"
                               onClick={() => setCompareModal({ type: rec.type, coverage: rec.coverage, monthlyCost: rec.monthlyCost })}
                             >
->>>>>>> origin/master
                               <ExternalLink size={14} />
                               Compare Plans
                             </button>
@@ -1211,8 +1204,6 @@ export default function FinancialProtection({ profile, onClose }: FinancialProte
             )}
           </div>
         </div>
-<<<<<<< HEAD
-=======
         {/* Place the modal here, inside the main parent div */}
         {compareModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
@@ -1349,7 +1340,6 @@ export default function FinancialProtection({ profile, onClose }: FinancialProte
             </div>
           </div>
         )}
->>>>>>> origin/master
       </div>
     </div>
   );

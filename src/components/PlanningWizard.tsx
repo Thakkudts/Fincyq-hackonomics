@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile } from '../types';
 import { formatCurrency, calculateTimeline, scenarios } from '../utils/financialCalculations';
-<<<<<<< HEAD
-import { useAudioNarration } from '../hooks/useAudioNarration';
-import AudioControls from './AudioControls';
-=======
->>>>>>> origin/master
+import { useBrowserTTS } from '../hooks/useBrowserTTS';
 import { 
   X, 
   Play, 
@@ -35,10 +31,6 @@ import {
   Pause,
   Loader2
 } from 'lucide-react';
-<<<<<<< HEAD
-=======
-import { useBrowserTTS } from '../hooks/useBrowserTTS';
->>>>>>> origin/master
 
 interface StorySlide {
   id: string;
@@ -60,112 +52,13 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState<StorySlide[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [autoPlay, setAutoPlay] = useState(false);
-<<<<<<< HEAD
-  const [selectedVoice, setSelectedVoice] = useState('pNInz6obpgDQGcFmaJgB'); // Adam voice
-  const [autoPlayTimer, setAutoPlayTimer] = useState<NodeJS.Timeout | null>(null);
-  const [isPreloading, setIsPreloading] = useState(false);
-  const [preloadProgress, setPreloadProgress] = useState(0);
-
-  // Audio narration hook
-  const {
-    audioState,
-    generateAudio,
-    play,
-    pause,
-    stop,
-    replay,
-    seek,
-    setVolume,
-    isConfigured
-  } = useAudioNarration(selectedVoice);
-=======
   const { isSupported, isPlaying, isPaused, isSpeaking, error, speak, pause, resume, stop } = useBrowserTTS();
->>>>>>> origin/master
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const autoPlayRef = React.useRef(false);
 
   useEffect(() => {
     generatePersonalizedStory();
   }, [profile]);
-
-<<<<<<< HEAD
-  // Preload all audio when slides are ready
-  useEffect(() => {
-    if (slides.length > 0 && isConfigured) {
-      preloadAllAudio();
-    }
-  }, [slides, isConfigured]);
-
-  // Auto-play functionality
-  useEffect(() => {
-    if (autoPlayTimer) {
-      clearTimeout(autoPlayTimer);
-    }
-
-    if (autoPlay && !audioState.isPlaying && audioState.hasAudio && currentSlide < slides.length - 1) {
-      // Auto-advance after audio finishes
-      const timer = setTimeout(() => {
-        nextSlide();
-      }, 2000); // 2 seconds after audio ends
-      setAutoPlayTimer(timer);
-    }
-
-    return () => {
-      if (autoPlayTimer) {
-        clearTimeout(autoPlayTimer);
-      }
-    };
-  }, [autoPlay, audioState.isPlaying, audioState.hasAudio, currentSlide, slides.length]);
-
-  // Auto-start audio when auto-play is enabled
-  useEffect(() => {
-    if (autoPlay && audioState.hasAudio && !audioState.isPlaying) {
-      play();
-    }
-  }, [autoPlay, audioState.hasAudio, currentSlide]);
-
-  const preloadAllAudio = async () => {
-    if (!isConfigured || slides.length === 0) return;
-
-    setIsPreloading(true);
-    setPreloadProgress(0);
-
-    for (let i = 0; i < slides.length; i++) {
-      try {
-        await generateAudio(slides[i].narration);
-        setPreloadProgress(((i + 1) / slides.length) * 100);
-        
-        // Small delay to prevent overwhelming the API
-        await new Promise(resolve => setTimeout(resolve, 500));
-      } catch (error) {
-        console.warn(`Failed to preload audio for slide ${i}:`, error);
-      }
-    }
-
-    setIsPreloading(false);
-    
-    // Generate audio for current slide after preloading
-    if (slides[currentSlide]) {
-      await generateAudio(slides[currentSlide].narration);
-    }
-  };
-=======
-  // Play narration for the current slide when autoplay is enabled
-  useEffect(() => {
-    if (autoPlay && slides.length > 0 && slides[currentSlide]) {
-      speak(slides[currentSlide].narration, () => {
-        // On narration end, advance to next slide or stop
-        if (currentSlide < slides.length - 1) {
-          setTimeout(() => setCurrentSlide((prev) => prev + 1), 500);
-        } else {
-          setAutoPlay(false);
-        }
-      });
-    } else {
-      stop();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPlay, currentSlide, slides.length]);
->>>>>>> origin/master
 
   const generatePersonalizedStory = () => {
     const userName = 'You'; // Could be personalized with actual user name
@@ -339,47 +232,6 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     setCurrentSlide(index);
   };
 
-<<<<<<< HEAD
-  const toggleAutoPlay = () => {
-    const newAutoPlay = !autoPlay;
-    setAutoPlay(newAutoPlay);
-    
-    if (newAutoPlay && audioState.hasAudio && !audioState.isPlaying) {
-      play();
-    } else if (!newAutoPlay) {
-      if (autoPlayTimer) {
-        clearTimeout(autoPlayTimer);
-        setAutoPlayTimer(null);
-      }
-    }
-  };
-
-  const handlePlayPause = () => {
-    if (audioState.isPlaying) {
-      pause();
-    } else {
-      if (audioState.hasAudio) {
-        play();
-      } else if (slides[currentSlide]) {
-        generateAudio(slides[currentSlide].narration);
-      }
-    }
-=======
-  const handlePlayPause = () => {
-    if (!autoPlay) {
-      setAutoPlay(true);
-    } else {
-      setAutoPlay(false);
-      stop();
-    }
-  };
-
-  // Optionally, allow resume if paused
-  const handleResume = () => {
-    if (isPaused) resume();
->>>>>>> origin/master
-  };
-
   const handleStartPlan = () => {
     setShowConfetti(true);
     setTimeout(() => {
@@ -388,18 +240,45 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     }, 1500);
   };
 
-<<<<<<< HEAD
-  // Generate audio when slide changes
-  useEffect(() => {
-    if (slides[currentSlide] && !isPreloading) {
-      generateAudio(slides[currentSlide].narration);
-    }
-  }, [currentSlide, slides, isPreloading]);
-
-=======
->>>>>>> origin/master
   const currentSlideData = slides[currentSlide];
   const progress = ((currentSlide + 1) / slides.length) * 100;
+
+  // Play current slide narration and auto-advance
+  const playStory = React.useCallback(() => {
+    if (!slides[currentSlide]) return;
+    autoPlayRef.current = true;
+    setIsAutoPlaying(true);
+    speak(slides[currentSlide].narration, () => {
+      if (autoPlayRef.current && currentSlide < slides.length - 1) {
+        setCurrentSlide((prev) => prev + 1);
+      } else {
+        setIsAutoPlaying(false);
+        autoPlayRef.current = false;
+      }
+    });
+  }, [slides, currentSlide, speak]);
+
+  // Pause story
+  const pauseStory = React.useCallback(() => {
+    autoPlayRef.current = false;
+    setIsAutoPlaying(false);
+    pause();
+  }, [pause]);
+
+  // Stop TTS on manual navigation
+  React.useEffect(() => {
+    stop();
+    setIsAutoPlaying(false);
+    autoPlayRef.current = false;
+  }, [currentSlide, stop]);
+
+  // Auto-advance when slide changes during autoplay
+  React.useEffect(() => {
+    if (isAutoPlaying) {
+      playStory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSlide]);
 
   if (!currentSlideData) return null;
 
@@ -440,50 +319,15 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
             </div>
             
             <div className="flex items-center gap-3">
-<<<<<<< HEAD
               <button
-                onClick={toggleAutoPlay}
-=======
-              {/* Single Play/Pause Button for Auto-Narration */}
-              <button
-                onClick={handlePlayPause}
->>>>>>> origin/master
+                onClick={isAutoPlaying ? pauseStory : playStory}
                 className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  autoPlay 
-                    ? 'bg-green-500/20 text-green-400 border border-green-400/30' 
-                    : 'bg-white/10 text-white/60 hover:text-white hover:bg-white/20'
+                  isAutoPlaying ? 'bg-green-500/20 text-green-400 border border-green-400/30' : 'bg-white/10 text-white/60 hover:text-white hover:bg-white/20'
                 }`}
-<<<<<<< HEAD
               >
-                {autoPlay ? <Zap size={16} /> : <Play size={16} />}
-                {autoPlay ? 'Auto' : 'Manual'}
+                {isAutoPlaying ? <Pause size={16} /> : <Play size={16} />}
+                {isAutoPlaying ? 'Pause Story' : 'Play Story'}
               </button>
-              
-              {/* Voice Settings */}
-              {isConfigured && (
-                <div className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2 border border-white/20">
-                  <Volume2 size={16} className="text-blue-400" />
-                  <span className="text-white/80 text-sm">AI Voice</span>
-                </div>
-=======
-                disabled={!isSupported}
-              >
-                {autoPlay ? <Pause size={16} /> : <Volume2 size={16} />}
-                {autoPlay ? 'Pause' : 'Play Story'}
-              </button>
-              
-              {/* Optionally show resume if paused */}
-              {isPaused && (
-                <button onClick={handleResume} className="ml-2 px-3 py-2 rounded bg-blue-500 text-white">Resume</button>
-              )}
-              {!isSupported && (
-                <span className="text-red-400 ml-2">Speech not supported in this browser.</span>
-              )}
-              {error && error !== 'Speech synthesis error' && (
-                <span className="text-red-400 ml-2">{error}</span>
->>>>>>> origin/master
-              )}
-              
               <button
                 onClick={onClose}
                 className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
@@ -508,28 +352,6 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
               </div>
             </div>
           </div>
-<<<<<<< HEAD
-
-          {/* Preloading Indicator */}
-          {isPreloading && (
-            <div className="mt-4 bg-blue-500/20 border border-blue-400/30 rounded-lg p-3">
-              <div className="flex items-center gap-3">
-                <Loader2 size={16} className="animate-spin text-blue-400" />
-                <div className="flex-1">
-                  <div className="text-blue-400 text-sm font-medium">Preparing AI Voice Narration</div>
-                  <div className="text-blue-300 text-xs">Generating audio for all slides... {preloadProgress.toFixed(0)}%</div>
-                </div>
-              </div>
-              <div className="mt-2 w-full bg-blue-900/30 rounded-full h-1">
-                <div 
-                  className="bg-blue-400 h-1 rounded-full transition-all duration-300"
-                  style={{ width: `${preloadProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
-=======
->>>>>>> origin/master
         </div>
 
         {/* Story Content - Scrollable */}
@@ -558,21 +380,6 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                 </p>
               </div>
 
-<<<<<<< HEAD
-              {/* Audio Controls */}
-              <AudioControls
-                audioState={audioState}
-                onPlay={handlePlayPause}
-                onPause={pause}
-                onReplay={replay}
-                onSeek={seek}
-                onVolumeChange={setVolume}
-                isConfigured={isConfigured}
-                className="mb-8"
-              />
-
-=======
->>>>>>> origin/master
               {/* Slide Indicators */}
               <div className="flex justify-center gap-2 mb-8 flex-wrap">
                 {slides.map((_, index) => (
@@ -598,18 +405,13 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
           <div className="flex justify-between items-center">
             <button
               onClick={prevSlide}
-<<<<<<< HEAD
               disabled={currentSlide === 0}
-=======
-              disabled={currentSlide === 0 || autoPlay}
->>>>>>> origin/master
               className="px-6 py-3 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white transition-colors flex items-center gap-2"
             >
               <ArrowRight size={16} className="rotate-180" />
               Previous
             </button>
 
-<<<<<<< HEAD
             <div className="flex items-center gap-4">
               {/* Quick Jump Buttons */}
               <div className="hidden md:flex gap-2">
@@ -632,12 +434,6 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
             {currentSlide === slides.length - 1 ? (
               <button
                 onClick={handleStartPlan}
-=======
-            {currentSlide === slides.length - 1 ? (
-              <button
-                onClick={handleStartPlan}
-                disabled={autoPlay}
->>>>>>> origin/master
                 className="px-8 py-3 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 rounded-xl text-white font-bold transition-all flex items-center gap-2 shadow-xl hover:shadow-green-500/25 transform hover:scale-105"
               >
                 <Rocket size={20} />
@@ -646,12 +442,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
             ) : (
               <button
                 onClick={nextSlide}
-<<<<<<< HEAD
                 className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-xl text-white font-medium transition-colors flex items-center gap-2"
-=======
-                disabled={currentSlide === slides.length - 1 || autoPlay}
-                className="px-6 py-3 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white transition-colors flex items-center gap-2"
->>>>>>> origin/master
               >
                 Next
                 <ArrowRight size={16} />

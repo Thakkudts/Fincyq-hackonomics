@@ -215,13 +215,7 @@ export async function generateFallbackAdvice(
 • **Large Cap Equity:** ₹${Math.round(userProfile.monthlySavings * 0.4 / 1000) * 1000}/month
 • **Mid/Small Cap:** ₹${Math.round(userProfile.monthlySavings * 0.3 / 1000) * 1000}/month
 • **International Funds:** ₹${Math.round(userProfile.monthlySavings * 0.1 / 1000) * 1000}/month
-<<<<<<< HEAD
-• **Debt Funds:** ₹${Math.round(userProfile.monthlySavings * 0.2 / 1000) * 1000}/month
-
-*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
-=======
 • **Debt Funds:** ₹${Math.round(userProfile.monthlySavings * 0.2 / 1000) * 1000}/month`
->>>>>>> origin/master
     };
   }
 
@@ -260,13 +254,7 @@ ${userProfile.riskTolerance === 'aggressive' ?
 1. Start SIPs on 1st of every month
 2. Increase SIP by 10% annually
 3. Review and rebalance quarterly
-<<<<<<< HEAD
-4. Stay invested for minimum 7-10 years
-
-*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
-=======
 4. Stay invested for minimum 7-10 years`
->>>>>>> origin/master
     };
   }
 
@@ -303,13 +291,7 @@ ${userProfile.monthlyExpenses * 0.3 < (affordablePrice - downPayment) * 0.0075 ?
 
 **Investment Alternative:**
 If you continue renting and invest ₹${Math.round(downPayment * 0.1 / 1000) * 1000}/month in equity:
-<<<<<<< HEAD
-• **Potential value in 10 years:** ₹${((downPayment * 0.1 * 12 * ((Math.pow(1.12, 10) - 1) / 0.12)) / 100000).toFixed(0)} lakhs
-
-*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
-=======
 • **Potential value in 10 years:** ₹${((downPayment * 0.1 * 12 * ((Math.pow(1.12, 10) - 1) / 0.12)) / 100000).toFixed(0)} lakhs`
->>>>>>> origin/master
     };
   }
 
@@ -357,13 +339,7 @@ With consistent ₹${userProfile.monthlySavings.toLocaleString()}/month investme
 1. Set up automatic SIPs for systematic investing
 2. Review and increase investments annually by 10%
 3. Monitor progress quarterly
-<<<<<<< HEAD
-4. Rebalance portfolio annually
-
-*🤖 Enhanced AI Response - Add your Hugging Face API key for real-time Mistral AI advice!*`
-=======
 4. Rebalance portfolio annually`
->>>>>>> origin/master
   };
 }
 

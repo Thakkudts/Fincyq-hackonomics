@@ -41,12 +41,8 @@ export async function generateSpeech(
         text,
         voiceId,
         options
-<<<<<<< HEAD
-      }
-=======
       },
       responseType: 'arraybuffer'
->>>>>>> origin/master
     });
 
     if (error) {
