@@ -29,7 +29,8 @@ import {
   Rocket,
   Volume2,
   Settings,
-  Pause
+  Pause,
+  Loader2
 } from 'lucide-react';
 
 interface StorySlide {
@@ -55,6 +56,8 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
   const [autoPlay, setAutoPlay] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState('pNInz6obpgDQGcFmaJgB'); // Adam voice
   const [autoPlayTimer, setAutoPlayTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isPreloading, setIsPreloading] = useState(false);
+  const [preloadProgress, setPreloadProgress] = useState(0);
 
   // Audio narration hook
   const {
@@ -73,12 +76,12 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     generatePersonalizedStory();
   }, [profile]);
 
-  // Generate audio when slide changes
+  // Preload all audio when slides are ready
   useEffect(() => {
-    if (slides[currentSlide]) {
-      generateAudio(slides[currentSlide].narration);
+    if (slides.length > 0 && isConfigured) {
+      preloadAllAudio();
     }
-  }, [currentSlide, slides, generateAudio]);
+  }, [slides, isConfigured]);
 
   // Auto-play functionality
   useEffect(() => {
@@ -86,7 +89,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
       clearTimeout(autoPlayTimer);
     }
 
-    if (autoPlay && audioState.hasAudio && !audioState.isPlaying && currentSlide < slides.length - 1) {
+    if (autoPlay && !audioState.isPlaying && audioState.hasAudio && currentSlide < slides.length - 1) {
       // Auto-advance after audio finishes
       const timer = setTimeout(() => {
         nextSlide();
@@ -107,6 +110,32 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
       play();
     }
   }, [autoPlay, audioState.hasAudio, currentSlide]);
+
+  const preloadAllAudio = async () => {
+    if (!isConfigured || slides.length === 0) return;
+
+    setIsPreloading(true);
+    setPreloadProgress(0);
+
+    for (let i = 0; i < slides.length; i++) {
+      try {
+        await generateAudio(slides[i].narration);
+        setPreloadProgress(((i + 1) / slides.length) * 100);
+        
+        // Small delay to prevent overwhelming the API
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.warn(`Failed to preload audio for slide ${i}:`, error);
+      }
+    }
+
+    setIsPreloading(false);
+    
+    // Generate audio for current slide after preloading
+    if (slides[currentSlide]) {
+      await generateAudio(slides[currentSlide].narration);
+    }
+  };
 
   const generatePersonalizedStory = () => {
     const userName = 'You'; // Could be personalized with actual user name
@@ -276,6 +305,10 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     }
   };
 
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
   const toggleAutoPlay = () => {
     const newAutoPlay = !autoPlay;
     setAutoPlay(newAutoPlay);
@@ -296,8 +329,8 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     } else {
       if (audioState.hasAudio) {
         play();
-      } else {
-        generateAudio(slides[currentSlide]?.narration || '');
+      } else if (slides[currentSlide]) {
+        generateAudio(slides[currentSlide].narration);
       }
     }
   };
@@ -309,6 +342,13 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
       onClose();
     }, 1500);
   };
+
+  // Generate audio when slide changes
+  useEffect(() => {
+    if (slides[currentSlide] && !isPreloading) {
+      generateAudio(slides[currentSlide].narration);
+    }
+  }, [currentSlide, slides, isPreloading]);
 
   const currentSlideData = slides[currentSlide];
   const progress = ((currentSlide + 1) / slides.length) * 100;
@@ -396,6 +436,25 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
               </div>
             </div>
           </div>
+
+          {/* Preloading Indicator */}
+          {isPreloading && (
+            <div className="mt-4 bg-blue-500/20 border border-blue-400/30 rounded-lg p-3">
+              <div className="flex items-center gap-3">
+                <Loader2 size={16} className="animate-spin text-blue-400" />
+                <div className="flex-1">
+                  <div className="text-blue-400 text-sm font-medium">Preparing AI Voice Narration</div>
+                  <div className="text-blue-300 text-xs">Generating audio for all slides... {preloadProgress.toFixed(0)}%</div>
+                </div>
+              </div>
+              <div className="mt-2 w-full bg-blue-900/30 rounded-full h-1">
+                <div 
+                  className="bg-blue-400 h-1 rounded-full transition-all duration-300"
+                  style={{ width: `${preloadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Story Content - Scrollable */}
@@ -441,7 +500,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                 {slides.map((_, index) => (
                   <button
                     key={index}
-                    onClick={() => setCurrentSlide(index)}
+                    onClick={() => goToSlide(index)}
                     className={`w-3 h-3 rounded-full transition-all ${
                       index === currentSlide 
                         ? 'bg-purple-400 scale-125' 
@@ -474,7 +533,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                 {slides.map((slide, index) => (
                   <button
                     key={slide.id}
-                    onClick={() => setCurrentSlide(index)}
+                    onClick={() => goToSlide(index)}
                     className={`px-3 py-2 rounded-lg text-xs transition-colors ${
                       index === currentSlide 
                         ? 'bg-purple-500 text-white' 
