@@ -28,7 +28,8 @@ import {
   Trophy,
   Rocket,
   Volume2,
-  Settings
+  Settings,
+  Pause
 } from 'lucide-react';
 
 interface StorySlide {
@@ -53,6 +54,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
   const [showConfetti, setShowConfetti] = useState(false);
   const [autoPlay, setAutoPlay] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState('pNInz6obpgDQGcFmaJgB'); // Adam voice
+  const [autoPlayTimer, setAutoPlayTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Audio narration hook
   const {
@@ -71,25 +73,40 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     generatePersonalizedStory();
   }, [profile]);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (autoPlay && audioState.isPlaying && currentSlide < slides.length - 1) {
-      // Auto-advance when audio finishes
-      if (audioState.currentTime >= audioState.duration && audioState.duration > 0) {
-        interval = setTimeout(() => {
-          nextSlide();
-        }, 1000); // 1 second delay after audio ends
-      }
-    }
-    return () => clearTimeout(interval);
-  }, [autoPlay, audioState.isPlaying, audioState.currentTime, audioState.duration, currentSlide, slides.length]);
-
   // Generate audio when slide changes
   useEffect(() => {
     if (slides[currentSlide]) {
       generateAudio(slides[currentSlide].narration);
     }
   }, [currentSlide, slides, generateAudio]);
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (autoPlayTimer) {
+      clearTimeout(autoPlayTimer);
+    }
+
+    if (autoPlay && audioState.hasAudio && !audioState.isPlaying && currentSlide < slides.length - 1) {
+      // Auto-advance after audio finishes
+      const timer = setTimeout(() => {
+        nextSlide();
+      }, 2000); // 2 seconds after audio ends
+      setAutoPlayTimer(timer);
+    }
+
+    return () => {
+      if (autoPlayTimer) {
+        clearTimeout(autoPlayTimer);
+      }
+    };
+  }, [autoPlay, audioState.isPlaying, audioState.hasAudio, currentSlide, slides.length]);
+
+  // Auto-start audio when auto-play is enabled
+  useEffect(() => {
+    if (autoPlay && audioState.hasAudio && !audioState.isPlaying) {
+      play();
+    }
+  }, [autoPlay, audioState.hasAudio, currentSlide]);
 
   const generatePersonalizedStory = () => {
     const userName = 'You'; // Could be personalized with actual user name
@@ -260,18 +277,17 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
   };
 
   const toggleAutoPlay = () => {
-    setAutoPlay(!autoPlay);
-    if (!autoPlay && audioState.hasAudio) {
+    const newAutoPlay = !autoPlay;
+    setAutoPlay(newAutoPlay);
+    
+    if (newAutoPlay && audioState.hasAudio && !audioState.isPlaying) {
       play();
+    } else if (!newAutoPlay) {
+      if (autoPlayTimer) {
+        clearTimeout(autoPlayTimer);
+        setAutoPlayTimer(null);
+      }
     }
-  };
-
-  const handleStartPlan = () => {
-    setShowConfetti(true);
-    setTimeout(() => {
-      onStartPlan?.();
-      onClose();
-    }, 1500);
   };
 
   const handlePlayPause = () => {
@@ -284,6 +300,14 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
         generateAudio(slides[currentSlide]?.narration || '');
       }
     }
+  };
+
+  const handleStartPlan = () => {
+    setShowConfetti(true);
+    setTimeout(() => {
+      onStartPlan?.();
+      onClose();
+    }, 1500);
   };
 
   const currentSlideData = slides[currentSlide];
@@ -314,7 +338,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
       )}
 
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl w-full max-w-5xl h-[95vh] flex flex-col border border-white/20 overflow-hidden">
-        {/* Header with Progress */}
+        {/* Header with Progress - Fixed */}
         <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 p-6 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -374,63 +398,65 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
           </div>
         </div>
 
-        {/* Story Content */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Story Icon */}
-            <div className={`w-24 h-24 bg-gradient-to-br ${currentSlideData.color} rounded-full flex items-center justify-center mx-auto mb-8 ${
-              currentSlideData.animation === 'bounce' ? 'animate-bounce' :
-              currentSlideData.animation === 'pulse' ? 'animate-pulse' :
-              currentSlideData.animation === 'spin' ? 'animate-spin' :
-              currentSlideData.animation === 'shake' ? 'animate-pulse' : ''
-            } shadow-2xl`}>
-              <currentSlideData.icon size={40} className="text-white" />
-            </div>
+        {/* Story Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="flex items-center justify-center p-8 min-h-full">
+            <div className="max-w-4xl mx-auto text-center">
+              {/* Story Icon */}
+              <div className={`w-24 h-24 bg-gradient-to-br ${currentSlideData.color} rounded-full flex items-center justify-center mx-auto mb-8 ${
+                currentSlideData.animation === 'bounce' ? 'animate-bounce' :
+                currentSlideData.animation === 'pulse' ? 'animate-pulse' :
+                currentSlideData.animation === 'spin' ? 'animate-spin' :
+                currentSlideData.animation === 'shake' ? 'animate-pulse' : ''
+              } shadow-2xl`}>
+                <currentSlideData.icon size={40} className="text-white" />
+              </div>
 
-            {/* Story Title */}
-            <h3 className="text-3xl font-bold text-white mb-6">
-              {currentSlideData.title}
-            </h3>
+              {/* Story Title */}
+              <h3 className="text-3xl font-bold text-white mb-6">
+                {currentSlideData.title}
+              </h3>
 
-            {/* Story Narration */}
-            <div className="bg-white/5 rounded-2xl p-8 border border-white/10 mb-8">
-              <p className="text-white/90 text-lg leading-relaxed">
-                {currentSlideData.narration}
-              </p>
-            </div>
+              {/* Story Narration */}
+              <div className="bg-white/5 rounded-2xl p-8 border border-white/10 mb-8 max-h-64 overflow-y-auto">
+                <p className="text-white/90 text-lg leading-relaxed">
+                  {currentSlideData.narration}
+                </p>
+              </div>
 
-            {/* Audio Controls */}
-            <AudioControls
-              audioState={audioState}
-              onPlay={handlePlayPause}
-              onPause={pause}
-              onReplay={replay}
-              onSeek={seek}
-              onVolumeChange={setVolume}
-              isConfigured={isConfigured}
-              className="mb-8"
-            />
+              {/* Audio Controls */}
+              <AudioControls
+                audioState={audioState}
+                onPlay={handlePlayPause}
+                onPause={pause}
+                onReplay={replay}
+                onSeek={seek}
+                onVolumeChange={setVolume}
+                isConfigured={isConfigured}
+                className="mb-8"
+              />
 
-            {/* Slide Indicators */}
-            <div className="flex justify-center gap-2 mb-8">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === currentSlide 
-                      ? 'bg-purple-400 scale-125' 
-                      : index < currentSlide 
-                        ? 'bg-green-400' 
-                        : 'bg-white/20'
-                  }`}
-                />
-              ))}
+              {/* Slide Indicators */}
+              <div className="flex justify-center gap-2 mb-8 flex-wrap">
+                {slides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      index === currentSlide 
+                        ? 'bg-purple-400 scale-125' 
+                        : index < currentSlide 
+                          ? 'bg-green-400' 
+                          : 'bg-white/20'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Navigation Footer */}
+        {/* Navigation Footer - Fixed */}
         <div className="p-6 border-t border-white/10 flex-shrink-0">
           <div className="flex justify-between items-center">
             <button
