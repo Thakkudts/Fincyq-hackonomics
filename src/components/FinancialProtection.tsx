@@ -67,6 +67,7 @@ export default function FinancialProtection({ profile, onClose }: FinancialProte
     marketReaction: 'hold'
   });
   const [riskProfile, setRiskProfile] = useState<RiskProfile | null>(null);
+  const [compareModal, setCompareModal] = useState<null | { type: string, coverage: number, monthlyCost: number }>(null);
 
   const { user } = useAuth();
 
@@ -694,7 +695,10 @@ export default function FinancialProtection({ profile, onClose }: FinancialProte
                         
                         {rec.recommended && (
                           <div className="flex gap-2">
-                            <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white text-sm transition-colors flex items-center gap-2">
+                            <button
+                              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white text-sm transition-colors flex items-center gap-2"
+                              onClick={() => setCompareModal({ type: rec.type, coverage: rec.coverage, monthlyCost: rec.monthlyCost })}
+                            >
                               <ExternalLink size={14} />
                               Compare Plans
                             </button>
@@ -1200,6 +1204,142 @@ export default function FinancialProtection({ profile, onClose }: FinancialProte
             )}
           </div>
         </div>
+        {/* Place the modal here, inside the main parent div */}
+        {compareModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-3xl border border-white/20 shadow-2xl max-w-2xl w-full p-0 relative">
+              <div className="flex justify-between items-center px-8 pt-8 pb-4 border-b border-white/10">
+                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                  <Shield size={24} className="text-blue-400" />
+                  Compare {compareModal.type} Plans
+                </h2>
+                <button
+                  className="text-white/60 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg p-2 transition-colors"
+                  onClick={() => setCompareModal(null)}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="px-8 py-6">
+                {/* Dynamic content based on insurance type */}
+                {compareModal.type === 'Term Life Insurance' && (
+                  <>
+                    <p className="mb-6 text-white/80">Based on your profile, a recommended coverage is <b className='text-blue-300'>{formatCurrency(compareModal.coverage)}</b> with an estimated monthly cost of <b className='text-blue-300'>{formatCurrency(compareModal.monthlyCost)}</b>.</p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm mb-4 bg-white/5 rounded-xl border border-white/10">
+                        <thead>
+                          <tr className="border-b border-white/10">
+                            <th className="text-left text-white/80 py-3">Provider</th>
+                            <th className="text-left text-white/80 py-3">Coverage</th>
+                            <th className="text-left text-white/80 py-3">Claim Settlement</th>
+                            <th className="text-left text-white/80 py-3">Monthly Premium</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b border-white/10">
+                            <td className="py-3 text-white font-medium">LIC</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">98.7%</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 100)}</td>
+                          </tr>
+                          <tr className="border-b border-white/10">
+                            <td className="py-3 text-white font-medium">HDFC Life</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">99.4%</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 150)}</td>
+                          </tr>
+                          <tr>
+                            <td className="py-3 text-white font-medium">ICICI Prudential</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">97.9%</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 120)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="text-xs text-white/50">* Actual premiums may vary based on age, health, and policy term.</p>
+                  </>
+                )}
+                {compareModal.type === 'Health Insurance' && (
+                  <>
+                    <p className="mb-6 text-white/80">Recommended health coverage for you: <b className='text-blue-300'>{formatCurrency(compareModal.coverage)}</b>. Estimated monthly cost: <b className='text-blue-300'>{formatCurrency(compareModal.monthlyCost)}</b>.</p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm mb-4 bg-white/5 rounded-xl border border-white/10">
+                        <thead>
+                          <tr className="border-b border-white/10">
+                            <th className="text-left text-white/80 py-3">Provider</th>
+                            <th className="text-left text-white/80 py-3">Coverage</th>
+                            <th className="text-left text-white/80 py-3">Network Hospitals</th>
+                            <th className="text-left text-white/80 py-3">Monthly Premium</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b border-white/10">
+                            <td className="py-3 text-white font-medium">Star Health</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">12,000+</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 80)}</td>
+                          </tr>
+                          <tr className="border-b border-white/10">
+                            <td className="py-3 text-white font-medium">Apollo Munich</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">10,000+</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 120)}</td>
+                          </tr>
+                          <tr>
+                            <td className="py-3 text-white font-medium">HDFC Ergo</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">13,000+</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 100)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="text-xs text-white/50">* Premiums and coverage may vary by age, city, and pre-existing conditions.</p>
+                  </>
+                )}
+                {compareModal.type === 'Property Insurance' && (
+                  <>
+                    <p className="mb-6 text-white/80">Recommended property coverage: <b className='text-blue-300'>{formatCurrency(compareModal.coverage)}</b>. Estimated monthly cost: <b className='text-blue-300'>{formatCurrency(compareModal.monthlyCost)}</b>.</p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm mb-4 bg-white/5 rounded-xl border border-white/10">
+                        <thead>
+                          <tr className="border-b border-white/10">
+                            <th className="text-left text-white/80 py-3">Provider</th>
+                            <th className="text-left text-white/80 py-3">Coverage</th>
+                            <th className="text-left text-white/80 py-3">Key Features</th>
+                            <th className="text-left text-white/80 py-3">Monthly Premium</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b border-white/10">
+                            <td className="py-3 text-white font-medium">Bajaj Allianz</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">Fire, Theft, Natural Calamities</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 60)}</td>
+                          </tr>
+                          <tr className="border-b border-white/10">
+                            <td className="py-3 text-white font-medium">ICICI Lombard</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">Fire, Burglary, Earthquake</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 80)}</td>
+                          </tr>
+                          <tr>
+                            <td className="py-3 text-white font-medium">HDFC Ergo</td>
+                            <td className="py-3 text-blue-200">{formatCurrency(compareModal.coverage)}</td>
+                            <td className="py-3 text-green-400">Fire, Flood, Theft</td>
+                            <td className="py-3 text-blue-300">{formatCurrency(compareModal.monthlyCost + 70)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="text-xs text-white/50">* Premiums and features may vary by property type and location.</p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
