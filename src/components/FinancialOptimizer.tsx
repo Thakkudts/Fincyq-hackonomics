@@ -409,32 +409,29 @@ export default function FinancialOptimizer({ profile, onClose, onApplyOptimizati
                         </h4>
                         
                         <div className="space-y-4">
-                          <div className="flex flex-col gap-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-white/80">Monthly Expenses</span>
-                              <span className="text-white font-medium">{formatCurrency(profile.monthlyExpenses)}</span>
-                            </div>
-                            <div className="w-full bg-white/10 rounded-full h-3">
-                              <div 
-                                className="bg-red-500 h-3 rounded-full"
-                                style={{ width: `${Math.min((profile.monthlyExpenses / (profile.income / 12)) * 100, 100)}%` }}
-                              />
-                            </div>
-                            <div className="text-white/60 text-sm">{((profile.monthlyExpenses / (profile.income / 12)) * 100).toFixed(1)}% of income</div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-white/80">Monthly Expenses</span>
+                            <span className="text-white font-medium">{formatCurrency(profile.monthlyExpenses)}</span>
                           </div>
-                          <div className="flex flex-col gap-2 mt-4">
-                            <div className="flex justify-between items-center">
-                              <span className="text-white/80">Monthly Savings</span>
-                              <span className="text-white font-medium">{formatCurrency(profile.monthlySavings)}</span>
-                            </div>
-                            <div className="w-full bg-white/10 rounded-full h-3">
-                              <div 
-                                className="bg-green-500 h-3 rounded-full"
-                                style={{ width: `${Math.min((profile.monthlySavings / (profile.income / 12)) * 100, 100)}%` }}
-                              />
-                            </div>
-                            <div className="text-white/60 text-sm">{((profile.monthlySavings / (profile.income / 12)) * 100).toFixed(1)}% of income</div>
+                          <div className="w-full bg-white/10 rounded-full h-3">
+                            <div 
+                              className="bg-red-500 h-3 rounded-full"
+                              style={{ width: `${(profile.monthlyExpenses / (profile.income / 12)) * 100}%` }}
+                            />
                           </div>
+                          <div className="text-white/60 text-sm">{((profile.monthlyExpenses / (profile.income / 12)) * 100).toFixed(1)}% of income</div>
+                          
+                          <div className="flex justify-between items-center mt-4">
+                            <span className="text-white/80">Monthly Savings</span>
+                            <span className="text-white font-medium">{formatCurrency(profile.monthlySavings)}</span>
+                          </div>
+                          <div className="w-full bg-white/10 rounded-full h-3">
+                            <div 
+                              className="bg-green-500 h-3 rounded-full"
+                              style={{ width: `${(profile.monthlySavings / (profile.income / 12)) * 100}%` }}
+                            />
+                          </div>
+                          <div className="text-white/60 text-sm">{((profile.monthlySavings / (profile.income / 12)) * 100).toFixed(1)}% of income</div>
                         </div>
                       </div>
 

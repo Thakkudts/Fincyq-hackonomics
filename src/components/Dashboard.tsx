@@ -21,7 +21,6 @@ import FinancialOptimizer from './FinancialOptimizer';
 import PlanningWizard from './PlanningWizard';
 import { calculateTimeline, scenarios, formatCurrency } from '../utils/financialCalculations';
 import { Clock, Brain, Target, Zap, Settings, LogOut, Save, Cloud, CloudOff, Receipt, AlertTriangle, Sparkles, Shield, GitBranch, Trophy, X, Play } from 'lucide-react';
-import AuthScreen from './AuthScreen';
 
 interface DashboardProps {
   profile: UserProfile;
@@ -110,11 +109,6 @@ export default function Dashboard({ profile, onReset }: DashboardProps) {
     // This could navigate to a specific planning section or show a success message
     console.log('Starting financial plan from wizard');
   };
-
-  // Add login gate
-  if (!user) {
-    return <AuthScreen />;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

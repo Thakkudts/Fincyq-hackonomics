@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { generateSpeech, isElevenLabsConfigured, cleanTextForSpeech } from '../lib/elevenlabs';
-import { useAudioCache } from './useAudioCache';
+import { getCachedSpeech, isElevenLabsConfigured, clearAudioCache } from '../lib/elevenlabs';
 
 export interface AudioState {
   isPlaying: boolean;
@@ -24,7 +23,6 @@ export function useAudioNarration(voiceId?: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentTextRef = useRef<string>('');
   const isGeneratingRef = useRef<boolean>(false);
-  const { getCachedAudio, cacheAudio } = useAudioCache();
 
   // Initialize audio element
   useEffect(() => {
@@ -94,10 +92,17 @@ export function useAudioNarration(voiceId?: string) {
     };
   }, []);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearAudioCache();
+    };
+  }, []);
+
   const generateAudio = async (text: string): Promise<boolean> => {
     if (!text.trim()) return false;
     
-    // Prevent concurrent requests
+    // Prevent concurrent requests - check if already generating
     if (isGeneratingRef.current || audioState.isLoading) {
       console.log('Audio generation already in progress, skipping request');
       return false;
@@ -111,12 +116,13 @@ export function useAudioNarration(voiceId?: string) {
     if (!isElevenLabsConfigured) {
       setAudioState(prev => ({
         ...prev,
-        error: 'ElevenLabs API not configured. Voice narration requires backend setup.',
+        error: 'ElevenLabs API not configured. Add VITE_ELEVENLABS_API_KEY to your .env file.',
         hasAudio: false
       }));
       return false;
     }
 
+    // Set generating flag to prevent concurrent requests
     isGeneratingRef.current = true;
     
     setAudioState(prev => ({
@@ -127,36 +133,7 @@ export function useAudioNarration(voiceId?: string) {
     }));
 
     try {
-      const cleanedText = cleanTextForSpeech(text);
-      const selectedVoiceId = voiceId || 'pNInz6obpgDQGcFmaJgB';
-
-      // First, check if we have cached audio
-      console.log('Checking cache for audio...');
-      const cachedAudio = await getCachedAudio(cleanedText, selectedVoiceId);
-      
-      if (cachedAudio && cachedAudio.audioUrl && audioRef.current) {
-        console.log('Using cached audio');
-        
-        // Clean up previous audio URL
-        if (audioRef.current.src) {
-          URL.revokeObjectURL(audioRef.current.src);
-        }
-        
-        audioRef.current.src = cachedAudio.audioUrl;
-        currentTextRef.current = text;
-        
-        setAudioState(prev => ({
-          ...prev,
-          isLoading: false,
-          hasAudio: true
-        }));
-        
-        return true;
-      }
-
-      // If not cached, generate new audio
-      console.log('Generating new audio...');
-      const result = await generateSpeech(cleanedText, selectedVoiceId);
+      const result = await getCachedSpeech(text, voiceId);
       
       if (result.success && result.audioUrl && audioRef.current) {
         // Clean up previous audio URL
@@ -166,24 +143,6 @@ export function useAudioNarration(voiceId?: string) {
         
         audioRef.current.src = result.audioUrl;
         currentTextRef.current = text;
-        
-        // Cache the audio for future use
-        try {
-          // Convert blob URL back to ArrayBuffer for caching
-          const response = await fetch(result.audioUrl);
-          const audioData = await response.arrayBuffer();
-          await cacheAudio(cleanedText, audioData, selectedVoiceId);
-          console.log('Audio cached successfully');
-        } catch (cacheError) {
-          console.warn('Failed to cache audio:', cacheError);
-          // Don't fail the whole operation if caching fails
-        }
-        
-        setAudioState(prev => ({
-          ...prev,
-          isLoading: false,
-          hasAudio: true
-        }));
         
         return true;
       } else {
@@ -222,6 +181,7 @@ export function useAudioNarration(voiceId?: string) {
       }));
       return false;
     } finally {
+      // Always clear the generating flag
       isGeneratingRef.current = false;
     }
   };
