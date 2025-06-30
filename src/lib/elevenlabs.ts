@@ -33,7 +33,9 @@ export async function generateSpeech(
       return { success: false, error: 'Authentication required' };
     }
 
-    // Call the secure backend function
+    console.log('Calling text-to-speech function with:', { text: text.substring(0, 50) + '...', voiceId });
+
+    // Call the secure backend function with proper error handling
     const { data, error } = await supabase.functions.invoke('text-to-speech', {
       body: {
         text,
@@ -44,9 +46,26 @@ export async function generateSpeech(
 
     if (error) {
       console.error('Supabase function error:', error);
+      
+      // Handle specific error types
+      if (error.message?.includes('Failed to fetch')) {
+        return { 
+          success: false, 
+          error: 'Unable to connect to audio service. Please check your internet connection and try again.' 
+        };
+      }
+      
       return { 
         success: false, 
         error: error.message || 'Backend function failed' 
+      };
+    }
+
+    // Check if we received an error response from the function
+    if (data && typeof data === 'object' && 'error' in data) {
+      return {
+        success: false,
+        error: data.error as string
       };
     }
 
@@ -56,24 +75,31 @@ export async function generateSpeech(
       const audioBlob = data instanceof Blob ? data : new Blob([data], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
 
+      console.log('Successfully generated audio, blob size:', audioBlob.size);
+
       return {
         success: true,
         audioUrl
       };
-    } else if (data && data.error) {
-      return {
-        success: false,
-        error: data.error
-      };
     } else {
+      console.error('Unexpected response format:', typeof data, data);
       return {
         success: false,
-        error: 'Invalid response from backend'
+        error: 'Invalid response format from audio service'
       };
     }
 
   } catch (error: any) {
     console.error('ElevenLabs Backend Error:', error);
+    
+    // Handle network errors specifically
+    if (error.name === 'TypeError' && error.message?.includes('fetch')) {
+      return {
+        success: false,
+        error: 'Network error: Unable to reach audio service. Please check your connection.'
+      };
+    }
+    
     return {
       success: false,
       error: error.message || 'Failed to generate speech'
