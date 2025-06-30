@@ -280,6 +280,14 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSlide]);
 
+  // Stop TTS when closing the modal
+  const handleClose = () => {
+    stop();
+    setIsAutoPlaying(false);
+    autoPlayRef.current = false;
+    onClose();
+  };
+
   if (!currentSlideData) return null;
 
   return (
@@ -329,7 +337,7 @@ export default function PlanningWizard({ profile, onClose, onStartPlan }: Planni
                 {isAutoPlaying ? 'Pause Story' : 'Play Story'}
               </button>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
               >
                 <X size={20} />
