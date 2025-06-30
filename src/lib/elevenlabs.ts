@@ -1,13 +1,8 @@
-// ElevenLabs API integration for text-to-speech
-const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
-const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
+// ElevenLabs API integration via secure backend
+import { supabase, isSupabaseConfigured } from './supabase';
 
-// Default voice ID (you can change this to your preferred voice)
-const DEFAULT_VOICE_ID = 'pNInz6obpgDQGcFmaJgB'; // Adam voice
-
-export const isElevenLabsConfigured = !!(ELEVENLABS_API_KEY && 
-  ELEVENLABS_API_KEY !== 'your_elevenlabs_api_key' &&
-  ELEVENLABS_API_KEY.length > 10);
+// Check if ElevenLabs is configured by testing the backend function
+export const isElevenLabsConfigured = isSupabaseConfigured; // Depends on Supabase for backend functions
 
 export interface ElevenLabsResponse {
   success: boolean;
@@ -17,7 +12,7 @@ export interface ElevenLabsResponse {
 
 export async function generateSpeech(
   text: string,
-  voiceId: string = DEFAULT_VOICE_ID,
+  voiceId: string = 'pNInz6obpgDQGcFmaJgB',
   options: {
     stability?: number;
     similarityBoost?: number;
@@ -25,48 +20,60 @@ export async function generateSpeech(
     useSpeakerBoost?: boolean;
   } = {}
 ): Promise<ElevenLabsResponse> {
-  if (!isElevenLabsConfigured) {
-    console.warn('ElevenLabs API key not configured');
-    return { success: false, error: 'ElevenLabs API key not configured' };
+  if (!isSupabaseConfigured) {
+    console.warn('Supabase not configured - ElevenLabs backend unavailable');
+    return { success: false, error: 'Backend not configured' };
   }
 
   try {
-    const response = await fetch(`${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'audio/mpeg',
-        'Content-Type': 'application/json',
-        'xi-api-key': ELEVENLABS_API_KEY
-      },
-      body: JSON.stringify({
-        text: text,
-        model_id: 'eleven_monolingual_v1',
-        voice_settings: {
-          stability: options.stability || 0.5,
-          similarity_boost: options.similarityBoost || 0.75,
-          style: options.style || 0.0,
-          use_speaker_boost: options.useSpeakerBoost || true
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`ElevenLabs API error: ${response.status} - ${errorText}`);
-      throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+    // Get the current session for authentication
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      return { success: false, error: 'Authentication required' };
     }
 
-    // Convert response to blob and create object URL
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
+    // Call the secure backend function
+    const { data, error } = await supabase.functions.invoke('text-to-speech', {
+      body: {
+        text,
+        voiceId,
+        options
+      }
+    });
 
-    return {
-      success: true,
-      audioUrl
-    };
+    if (error) {
+      console.error('Supabase function error:', error);
+      return { 
+        success: false, 
+        error: error.message || 'Backend function failed' 
+      };
+    }
+
+    // The response should be audio data
+    if (data instanceof ArrayBuffer || data instanceof Blob) {
+      // Convert to blob if needed
+      const audioBlob = data instanceof Blob ? data : new Blob([data], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      return {
+        success: true,
+        audioUrl
+      };
+    } else if (data && data.error) {
+      return {
+        success: false,
+        error: data.error
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Invalid response from backend'
+      };
+    }
 
   } catch (error: any) {
-    console.error('ElevenLabs API Error:', error);
+    console.error('ElevenLabs Backend Error:', error);
     return {
       success: false,
       error: error.message || 'Failed to generate speech'
@@ -133,7 +140,7 @@ const audioCache = new Map<string, string>();
 let requestQueue: Promise<ElevenLabsResponse> | null = null;
 
 export async function getCachedSpeech(text: string, voiceId?: string): Promise<ElevenLabsResponse> {
-  const cacheKey = `${text}-${voiceId || DEFAULT_VOICE_ID}`;
+  const cacheKey = `${text}-${voiceId || 'pNInz6obpgDQGcFmaJgB'}`;
   
   if (audioCache.has(cacheKey)) {
     return {

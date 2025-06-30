@@ -8,7 +8,8 @@ import {
   Loader2,
   AlertCircle,
   Settings,
-  Mic
+  Mic,
+  Shield
 } from 'lucide-react';
 import { AudioState } from '../hooks/useAudioNarration';
 
@@ -69,12 +70,12 @@ export default function AudioControls({
           <div className="flex-1">
             <div className="text-orange-400 font-medium text-sm">Voice Narration Unavailable</div>
             <div className="text-orange-300 text-xs mt-1">
-              Add VITE_ELEVENLABS_API_KEY to your .env file to enable AI voice narration
+              Voice narration requires backend configuration. Contact your administrator to enable this feature.
             </div>
           </div>
           <div className="flex items-center gap-1 text-orange-400">
-            <Settings size={16} />
-            <span className="text-xs">Setup Required</span>
+            <Shield size={16} />
+            <span className="text-xs">Secure Backend</span>
           </div>
         </div>
       </div>
@@ -102,6 +103,7 @@ export default function AudioControls({
         <div className="flex items-center gap-2 text-blue-400">
           <Mic size={16} />
           <span className="text-xs font-medium">AI Voice</span>
+          <Shield size={12} className="text-green-400" title="Secure Backend" />
         </div>
 
         {/* Main Controls */}
