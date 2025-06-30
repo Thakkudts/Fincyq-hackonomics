@@ -22,6 +22,7 @@ export function useAudioNarration(voiceId?: string) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentTextRef = useRef<string>('');
+  const isGeneratingRef = useRef<boolean>(false);
 
   // Initialize audio element
   useEffect(() => {
@@ -101,6 +102,12 @@ export function useAudioNarration(voiceId?: string) {
   const generateAudio = async (text: string): Promise<boolean> => {
     if (!text.trim()) return false;
     
+    // Prevent concurrent requests - check if already generating
+    if (isGeneratingRef.current || audioState.isLoading) {
+      console.log('Audio generation already in progress, skipping request');
+      return false;
+    }
+    
     // Don't regenerate if it's the same text
     if (currentTextRef.current === text && audioState.hasAudio) {
       return true;
@@ -115,6 +122,9 @@ export function useAudioNarration(voiceId?: string) {
       return false;
     }
 
+    // Set generating flag to prevent concurrent requests
+    isGeneratingRef.current = true;
+    
     setAudioState(prev => ({
       ...prev,
       isLoading: true,
@@ -136,22 +146,43 @@ export function useAudioNarration(voiceId?: string) {
         
         return true;
       } else {
+        // Provide more user-friendly error messages
+        let errorMessage = result.error || 'Failed to generate audio';
+        
+        if (result.error?.includes('429')) {
+          errorMessage = 'Audio service is busy. Please try again in a moment.';
+        } else if (result.error?.includes('401') || result.error?.includes('unusual_activity')) {
+          errorMessage = 'Audio service temporarily unavailable. Please check your API configuration.';
+        } else if (result.error?.includes('quota') || result.error?.includes('limit')) {
+          errorMessage = 'Audio service quota exceeded. Please try again later.';
+        }
+        
         setAudioState(prev => ({
           ...prev,
           isLoading: false,
-          error: result.error || 'Failed to generate audio',
+          error: errorMessage,
           hasAudio: false
         }));
         return false;
       }
     } catch (error: any) {
+      let errorMessage = error.message || 'Failed to generate audio';
+      
+      // Handle network errors gracefully
+      if (error.message?.includes('fetch')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      }
+      
       setAudioState(prev => ({
         ...prev,
         isLoading: false,
-        error: error.message || 'Failed to generate audio',
+        error: errorMessage,
         hasAudio: false
       }));
       return false;
+    } finally {
+      // Always clear the generating flag
+      isGeneratingRef.current = false;
     }
   };
 

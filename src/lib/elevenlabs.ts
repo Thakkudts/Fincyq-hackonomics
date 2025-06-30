@@ -52,6 +52,7 @@ export async function generateSpeech(
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`ElevenLabs API error: ${response.status} - ${errorText}`);
       throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
     }
 
@@ -128,6 +129,9 @@ export function cleanTextForSpeech(text: string): string {
 // Cache for generated audio to avoid re-generating the same text
 const audioCache = new Map<string, string>();
 
+// Request queue to prevent concurrent requests
+let requestQueue: Promise<ElevenLabsResponse> | null = null;
+
 export async function getCachedSpeech(text: string, voiceId?: string): Promise<ElevenLabsResponse> {
   const cacheKey = `${text}-${voiceId || DEFAULT_VOICE_ID}`;
   
@@ -138,13 +142,26 @@ export async function getCachedSpeech(text: string, voiceId?: string): Promise<E
     };
   }
 
-  const result = await generateSpeech(cleanTextForSpeech(text), voiceId);
-  
-  if (result.success && result.audioUrl) {
-    audioCache.set(cacheKey, result.audioUrl);
+  // If there's already a request in progress, wait for it to complete
+  if (requestQueue) {
+    await requestQueue;
   }
+
+  // Create new request and add to queue
+  requestQueue = generateSpeech(cleanTextForSpeech(text), voiceId);
   
-  return result;
+  try {
+    const result = await requestQueue;
+    
+    if (result.success && result.audioUrl) {
+      audioCache.set(cacheKey, result.audioUrl);
+    }
+    
+    return result;
+  } finally {
+    // Clear the queue when request completes
+    requestQueue = null;
+  }
 }
 
 // Cleanup function to revoke object URLs and clear cache

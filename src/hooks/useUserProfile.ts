@@ -32,7 +32,8 @@ export function useUserProfile(userId?: string) {
 
       if (!profileData) {
         setProfile(null);
-        return { success: false, error: 'Profile not found' };
+        // Don't treat this as an error - it's expected for new users
+        return { success: true, profile: null };
       }
 
       // Load financial goals
